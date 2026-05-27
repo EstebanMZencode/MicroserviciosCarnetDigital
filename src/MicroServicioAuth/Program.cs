@@ -1,3 +1,4 @@
+using MicroServicioAuth;
 using MicroServicioAuth.Repository;
 using MicroServicioAuth.Services;
 
@@ -24,5 +25,6 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Enviro
 
 app.UseHttpsRedirection();
 
+app.MapAuthEndpoints();
 app.Run();
 
