@@ -1,0 +1,6 @@
+@MicroServicioAutoregistro_HostAddress = http://localhost:5135
+
+GET {{MicroServicioAutoregistro_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
