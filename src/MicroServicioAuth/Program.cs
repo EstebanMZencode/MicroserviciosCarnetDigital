@@ -27,4 +27,3 @@ app.UseHttpsRedirection();
 
 app.MapAuthEndpoints();
 app.Run();
-
