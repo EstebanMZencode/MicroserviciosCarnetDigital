@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using MicroServicioBitacoras.Entities;
 
 namespace MicroServicioBitacoras.Repository
@@ -12,29 +13,45 @@ namespace MicroServicioBitacoras.Repository
             _dbConnectionFactory = dbConnectionFactory;
         }
 
-        // Consultar todas las bitácoras (más recientes primero)
-        public async Task<IEnumerable<Bitacora>> GetAllAsync()
+        // Consultar paginado: el SP devuelve DOS result sets (filas + total)
+        public async Task<(IEnumerable<Bitacora> Items, int Total)> GetPaginadoAsync(
+            int pageNumber, int pageSize, string? searchTerm,
+            string sortColumn, string sortDirection, bool incluirEliminados)
         {
             using (var connection = _dbConnectionFactory.CreateConnection())
             {
-                var sql = @"SELECT BitacoraID, UsuarioID, Descripcion, FechaHora
-                            FROM Bitacoras
-                            ORDER BY FechaHora DESC";
-                return await connection.QueryAsync<Bitacora>(sql);
+                var parameters = new
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    SearchTerm = searchTerm,
+                    SortColumn = sortColumn,
+                    SortDirection = sortDirection,
+                    IncluirEliminados = incluirEliminados
+                };
+
+                using (var multi = await connection.QueryMultipleAsync(
+                    "[Carnet_Audit_User].[SP_Bitacoras_SelectPaginado]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure))
+                {
+                    var items = await multi.ReadAsync<Bitacora>();
+                    var total = await multi.ReadFirstAsync<int>();
+                    return (items, total);
+                }
             }
         }
 
-        // Registrar una bitácora. La fecha la pone el servidor (SYSUTCDATETIME).
-        // No se manda BitacoraID porque es IDENTITY (autoincremental).
-        // Devuelve el ID generado por la base.
-        public async Task<int> CreateAsync(Bitacora bitacora)
+        // Registrar una bitácora. El SP inserta y devuelve el registro creado.
+        // BitacoraID (GUID) y FechaHora los pone la base.
+        public async Task<Bitacora?> CreateAsync(Bitacora bitacora)
         {
             using (var connection = _dbConnectionFactory.CreateConnection())
             {
-                var sql = @"INSERT INTO Bitacoras (UsuarioID, Descripcion, FechaHora)
-                            VALUES (@UsuarioID, @Descripcion, SYSUTCDATETIME());
-                            SELECT CAST(SCOPE_IDENTITY() AS INT);";
-                return await connection.ExecuteScalarAsync<int>(sql, bitacora);
+                return await connection.QueryFirstOrDefaultAsync<Bitacora>(
+                    "[Carnet_Audit_User].[SP_Bitacoras_Insert]",
+                    new { bitacora.UsuarioID, bitacora.Descripcion },
+                    commandType: CommandType.StoredProcedure);
             }
         }
     }

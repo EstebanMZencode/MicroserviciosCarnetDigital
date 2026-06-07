@@ -12,9 +12,12 @@ namespace MicroServicioParametros.Services
             _parametroRepository = parametroRepository;
         }
 
-        public async Task<IEnumerable<Parametro>> GetAllAsync()
+        public async Task<(IEnumerable<Parametro> Items, int Total)> GetPaginadoAsync(
+            int pageNumber, int pageSize, string? searchTerm,
+            string sortColumn, string sortDirection, bool incluirEliminados)
         {
-            return await _parametroRepository.GetAllAsync();
+            return await _parametroRepository.GetPaginadoAsync(
+                pageNumber, pageSize, searchTerm, sortColumn, sortDirection, incluirEliminados);
         }
 
         public async Task<Parametro?> GetByIdAsync(string id)
@@ -22,7 +25,7 @@ namespace MicroServicioParametros.Services
             return await _parametroRepository.GetByIdAsync(id);
         }
 
-        public async Task<int> CreateAsync(Parametro parametro)
+        public async Task<Parametro?> CreateAsync(Parametro parametro)
         {
             return await _parametroRepository.CreateAsync(parametro);
         }
@@ -32,9 +35,9 @@ namespace MicroServicioParametros.Services
             return await _parametroRepository.UpdateAsync(parametro);
         }
 
-        public async Task<int> DeleteAsync(string id)
+        public async Task<int> LogicDeleteAsync(string id)
         {
-            return await _parametroRepository.DeleteAsync(id);
+            return await _parametroRepository.LogicDeleteAsync(id);
         }
     }
 }

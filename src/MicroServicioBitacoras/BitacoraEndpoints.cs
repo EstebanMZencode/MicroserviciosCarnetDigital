@@ -12,10 +12,31 @@ namespace MicroServicioBitacoras
                 .MapGroup("/bitacora")
                 .WithTags(nameof(Bitacora));
 
-            // GET /bitacora -> Consultar todas las bitácoras
-            group.MapGet("/", async ([FromServices] IBitacoraService service) =>
+            // GET /bitacora -> Consultar paginado
+            group.MapGet("/", async (
+                [FromServices] IBitacoraService service,
+                int? pageNumber,
+                int? pageSize,
+                string? searchTerm,
+                string? sortColumn,
+                string? sortDirection,
+                bool? incluirEliminados) =>
             {
-                return Results.Ok(await service.GetAllAsync());
+                var (items, total) = await service.GetPaginadoAsync(
+                    pageNumber ?? 1,
+                    pageSize ?? 10,
+                    searchTerm,
+                    sortColumn ?? "",
+                    string.IsNullOrWhiteSpace(sortDirection) ? "ASC" : sortDirection,
+                    incluirEliminados ?? false);
+
+                return Results.Ok(new
+                {
+                    pageNumber = pageNumber ?? 1,
+                    pageSize = pageSize ?? 10,
+                    total,
+                    items
+                });
             })
             .WithName("GetAllBitacoras")
             .WithOpenApi();
@@ -29,15 +50,13 @@ namespace MicroServicioBitacoras
                     return Results.BadRequest(new { errores });
                 }
 
-                var nuevoId = await service.CreateAsync(bitacora);
-                if (nuevoId <= 0)
+                var creada = await service.CreateAsync(bitacora);
+                if (creada is null)
                 {
                     return Results.Problem("No se pudo registrar la bitácora");
                 }
 
-                // Devolvemos el id generado por la base
-                bitacora.BitacoraID = nuevoId;
-                return Results.Created($"/bitacora/{nuevoId}", bitacora);
+                return Results.Created($"/bitacora/{creada.BitacoraID}", creada);
             })
             .WithName("CreateBitacora")
             .WithOpenApi();
@@ -48,10 +67,10 @@ namespace MicroServicioBitacoras
         {
             var errores = new List<string>();
 
-            // Usuario que ejecuta la acción: requerido (debe ser un id válido > 0)
-            if (bitacora.UsuarioID <= 0)
+            // Usuario que ejecuta la acción: requerido (GUID no vacío)
+            if (bitacora.UsuarioID == Guid.Empty)
             {
-                errores.Add("El usuario que ejecuta la acción es requerido y debe ser válido.");
+                errores.Add("El usuario que ejecuta la acción es requerido.");
             }
 
             // Descripción: requerida, no vacía ni solo espacios en blanco
@@ -59,9 +78,9 @@ namespace MicroServicioBitacoras
             {
                 errores.Add("La descripción de la acción es requerida y no puede ser vacía ni espacios en blanco.");
             }
-            else if (bitacora.Descripcion.Length > 255)
+            else if (bitacora.Descripcion.Length > 500)
             {
-                errores.Add("La descripción no puede tener más de 255 caracteres.");
+                errores.Add("La descripción no puede tener más de 500 caracteres.");
             }
 
             return errores;

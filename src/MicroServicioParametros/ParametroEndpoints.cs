@@ -13,10 +13,34 @@ namespace MicroServicioParametros
                 .MapGroup("/parametro")
                 .WithTags(nameof(Parametro));
 
-            // GET /parametro  -> Obtener todos
-            group.MapGet("/", async ([FromServices] IParametroService service) =>
+            // GET /parametro -> Obtener paginado
+            // Parámetros opcionales por query string, ej:
+            //   /parametro?pageNumber=1&pageSize=10&searchTerm=TOKEN&sortColumn=Identificador&sortDirection=ASC&incluirEliminados=false
+            group.MapGet("/", async (
+                [FromServices] IParametroService service,
+                int? pageNumber,
+                int? pageSize,
+                string? searchTerm,
+                string? sortColumn,
+                string? sortDirection,
+                bool? incluirEliminados) =>
             {
-                return Results.Ok(await service.GetAllAsync());
+                var (items, total) = await service.GetPaginadoAsync(
+                    pageNumber ?? 1,
+                    pageSize ?? 10,
+                    searchTerm,
+                    string.IsNullOrWhiteSpace(sortColumn) ? "Identificador" : sortColumn,
+                    string.IsNullOrWhiteSpace(sortDirection) ? "ASC" : sortDirection,
+                    incluirEliminados ?? false);
+
+                // Devolvemos las filas + metadatos de paginación
+                return Results.Ok(new
+                {
+                    pageNumber = pageNumber ?? 1,
+                    pageSize = pageSize ?? 10,
+                    total,
+                    items
+                });
             })
             .WithName("GetAllParametros")
             .WithOpenApi();
@@ -39,21 +63,20 @@ namespace MicroServicioParametros
                     return Results.BadRequest(new { errores });
                 }
 
-                // 409 si ya existe (la llave primaria es el identificador)
+                // 409 si ya existe
                 var exists = await service.GetByIdAsync(parametro.Identificador);
                 if (exists is not null)
                 {
                     return Results.Conflict(new { message = $"Ya existe un parámetro con el identificador '{parametro.Identificador}'." });
                 }
 
-                var rows = await service.CreateAsync(parametro);
-                if (rows <= 0)
+                var creado = await service.CreateAsync(parametro);
+                if (creado is null)
                 {
                     return Results.Problem("No se pudo crear el parámetro");
                 }
 
-                var created = await service.GetByIdAsync(parametro.Identificador) ?? parametro;
-                return Results.Created($"/parametro/{created.Identificador}", created);
+                return Results.Created($"/parametro/{creado.Identificador}", creado);
             })
             .WithName("CreateParametro")
             .WithOpenApi();
@@ -78,19 +101,18 @@ namespace MicroServicioParametros
                     return Results.NotFound();
                 }
 
-                var updated = await service.UpdateAsync(parametro);
-                if (updated <= 0)
-                {
-                    return Results.Problem("No se pudo modificar el parámetro");
-                }
+                await service.UpdateAsync(parametro);
 
+                // No dependemos del conteo de filas: el SP usa SET NOCOUNT ON y el
+                // trigger INSTEAD OF UPDATE hace que ExecuteAsync devuelva 0 aunque
+                // el UPDATE sí se aplicó. Verificamos leyendo el estado actual.
                 var current = await service.GetByIdAsync(id) ?? parametro;
                 return Results.Ok(current);
             })
             .WithName("UpdateParametro")
             .WithOpenApi();
 
-            // DELETE /parametro/{id} -> Eliminar
+            // DELETE /parametro/{id} -> Eliminación LÓGICA (pone Estado = 0)
             group.MapDelete("/{id}", async ([FromServices] IParametroService service, string id) =>
             {
                 var exists = await service.GetByIdAsync(id);
@@ -99,8 +121,11 @@ namespace MicroServicioParametros
                     return Results.NotFound();
                 }
 
-                var deleted = await service.DeleteAsync(id);
-                return deleted > 0 ? Results.NoContent() : Results.Problem("No se pudo eliminar el parámetro");
+                // No dependemos del conteo de filas (mismo motivo que en el PUT:
+                // SET NOCOUNT ON en el SP hace que ExecuteAsync devuelva 0
+                // aunque el soft delete sí se aplicó).
+                await service.LogicDeleteAsync(id);
+                return Results.NoContent();
             })
             .WithName("DeleteParametro")
             .WithOpenApi();
@@ -111,14 +136,12 @@ namespace MicroServicioParametros
         {
             var errores = new List<string>();
 
-            // Requeridos, no vacíos ni solo espacios en blanco
             if (string.IsNullOrWhiteSpace(parametro.Identificador))
             {
                 errores.Add("El identificador del parámetro es requerido y no puede ser vacío ni espacios en blanco.");
             }
             else
             {
-                // Máximo 10 caracteres y solo letras en mayúscula
                 if (parametro.Identificador.Length > 10)
                 {
                     errores.Add("El identificador no puede tener más de 10 caracteres.");

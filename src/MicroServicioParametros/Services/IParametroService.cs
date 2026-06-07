@@ -4,10 +4,13 @@ namespace MicroServicioParametros.Services
 {
     public interface IParametroService
     {
-        Task<IEnumerable<Parametro>> GetAllAsync();
+        Task<(IEnumerable<Parametro> Items, int Total)> GetPaginadoAsync(
+            int pageNumber, int pageSize, string? searchTerm,
+            string sortColumn, string sortDirection, bool incluirEliminados);
+
         Task<Parametro?> GetByIdAsync(string id);
-        Task<int> CreateAsync(Parametro parametro);
+        Task<Parametro?> CreateAsync(Parametro parametro);
         Task<int> UpdateAsync(Parametro parametro);
-        Task<int> DeleteAsync(string id);
+        Task<int> LogicDeleteAsync(string id);
     }
 }
