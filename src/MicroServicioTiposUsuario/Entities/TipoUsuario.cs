@@ -1,22 +1,18 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace MicroservicioAreas.Entities
+namespace MicroservicioTiposUsuario.Entities
 {
-    [Table("AreasTrabajo")]
-    public class Area
+    [Table("TiposUsuarios")]
+    public class TipoUsuario
     {
         [Key]
-        [Column("AreaTrabID")]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Guid AreaTrabID { get; set; }
+        public Guid TipoUsuarioID { get; set; }
 
         [Required]
-        [StringLength(200)]
-        public string NombreAreaTrab { get; set; }
-
-        [Required]
-        public Guid InstitucionID { get; set; }
+        [StringLength(50)]
+        public string NombreTipoUsuario { get; set; }
 
         public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
 

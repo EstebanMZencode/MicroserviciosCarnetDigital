@@ -1,6 +1,29 @@
-@MicroServicioAreas_HostAddress = http://localhost:5237
+@baseUrl = https://localhost:7233/api/area
 
-GET {{MicroServicioAreas_HostAddress}}/weatherforecast/
-Accept: application/json
+### Obtener todas las áreas
+GET {{baseUrl}}/
 
-###
+### Obtener área por ID
+GET {{baseUrl}}/1
+
+### Crear área
+POST {{baseUrl}}/
+Content-Type: application/json
+
+{
+  "nombreAreaTrab": "Informática",
+  "institucionID": 1
+}
+
+### Actualizar área
+PUT {{baseUrl}}/1
+Content-Type: application/json
+
+{
+  "areaTrabajoID": 1,
+  "nombreAreaTrab": "Informática Aplicada",
+  "institucionID": 1
+}
+
+### Eliminar área
+DELETE {{baseUrl}}/1
