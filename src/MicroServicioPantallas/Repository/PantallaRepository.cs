@@ -1,4 +1,5 @@
-﻿using Dapper;
+﻿using System.Data;
+using Dapper;
 using MicroServicioPantallas.Entities;
 
 namespace MicroServicioPantallas.Repository
@@ -12,66 +13,75 @@ namespace MicroServicioPantallas.Repository
             _dbConnectionFactory = dbConnectionFactory;
         }
 
-        // Obtener todas las pantallas
-        public async Task<IEnumerable<Pantalla>> GetAllAsync()
+        public async Task<(IEnumerable<Pantalla> Items, int Total)> GetPaginadoAsync(
+            int pageNumber, int pageSize, string? searchTerm,
+            string sortColumn, string sortDirection, bool incluirEliminados)
         {
             using (var connection = _dbConnectionFactory.CreateConnection())
             {
-                var sql = @"SELECT PantallaID, NombrePantalla, Descripcion, Ruta,
-                                   FechaCreacion, FechaModificacion, Estado
-                            FROM Pantallas";
-                return await connection.QueryAsync<Pantalla>(sql);
+                var parameters = new
+                {
+                    PageNumber = pageNumber,
+                    PageSize = pageSize,
+                    SearchTerm = searchTerm,
+                    SortColumn = sortColumn,
+                    SortDirection = sortDirection,
+                    IncluirEliminados = incluirEliminados
+                };
+
+                using (var multi = await connection.QueryMultipleAsync(
+                    "[Carnet_Access_User].[SP_Pantallas_SelectPaginado]",
+                    parameters,
+                    commandType: CommandType.StoredProcedure))
+                {
+                    var items = await multi.ReadAsync<Pantalla>();
+                    var total = await multi.ReadFirstAsync<int>();
+                    return (items, total);
+                }
             }
         }
 
-        // Obtener una pantalla por su llave primaria
-        public async Task<Pantalla?> GetByIdAsync(int id)
+        public async Task<Pantalla?> GetByIdAsync(Guid id)
         {
             using (var connection = _dbConnectionFactory.CreateConnection())
             {
-                var sql = @"SELECT PantallaID, NombrePantalla, Descripcion, Ruta,
-                                   FechaCreacion, FechaModificacion, Estado
-                            FROM Pantallas
-                            WHERE PantallaID = @id";
-                return await connection.QueryFirstOrDefaultAsync<Pantalla>(sql, new { id });
+                return await connection.QueryFirstOrDefaultAsync<Pantalla>(
+                    "[Carnet_Access_User].[SP_Pantallas_SelectByID]",
+                    new { PantallaID = id },
+                    commandType: CommandType.StoredProcedure);
             }
         }
 
-        // Crear una pantalla. PantallaID es IDENTITY, no se manda.
-        // Devuelve el ID generado por la base.
-        public async Task<int> CreateAsync(Pantalla pantalla)
+        public async Task<Pantalla?> CreateAsync(Pantalla pantalla)
         {
             using (var connection = _dbConnectionFactory.CreateConnection())
             {
-                var sql = @"INSERT INTO Pantallas (NombrePantalla, Descripcion, Ruta, FechaCreacion, Estado)
-                            VALUES (@NombrePantalla, @Descripcion, @Ruta, SYSUTCDATETIME(), 1);
-                            SELECT CAST(SCOPE_IDENTITY() AS INT);";
-                return await connection.ExecuteScalarAsync<int>(sql, pantalla);
+                return await connection.QueryFirstOrDefaultAsync<Pantalla>(
+                    "[Carnet_Access_User].[SP_Pantallas_Insert]",
+                    new { pantalla.NombrePantalla, pantalla.Descripcion, pantalla.Ruta },
+                    commandType: CommandType.StoredProcedure);
             }
         }
 
-        // Modificar una pantalla
         public async Task<int> UpdateAsync(Pantalla pantalla)
         {
             using (var connection = _dbConnectionFactory.CreateConnection())
             {
-                var sql = @"UPDATE Pantallas
-                            SET NombrePantalla = @NombrePantalla,
-                                Descripcion = @Descripcion,
-                                Ruta = @Ruta,
-                                FechaModificacion = SYSUTCDATETIME()
-                            WHERE PantallaID = @PantallaID";
-                return await connection.ExecuteAsync(sql, pantalla);
+                return await connection.ExecuteAsync(
+                    "[Carnet_Access_User].[SP_Pantallas_Update]",
+                    new { pantalla.PantallaID, pantalla.NombrePantalla, pantalla.Descripcion, pantalla.Ruta, pantalla.Estado },
+                    commandType: CommandType.StoredProcedure);
             }
         }
 
-        // Eliminar una pantalla
-        public async Task<int> DeleteAsync(int id)
+        public async Task<int> LogicDeleteAsync(Guid id)
         {
             using (var connection = _dbConnectionFactory.CreateConnection())
             {
-                var sql = "DELETE FROM Pantallas WHERE PantallaID = @id";
-                return await connection.ExecuteAsync(sql, new { id });
+                return await connection.ExecuteAsync(
+                    "[Carnet_Access_User].[SP_Pantallas_LogicDelete]",
+                    new { PantallaID = id },
+                    commandType: CommandType.StoredProcedure);
             }
         }
     }

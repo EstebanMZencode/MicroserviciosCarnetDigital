@@ -13,136 +13,96 @@ namespace MicroServicioPantallas
                 .MapGroup("/pantallas")
                 .WithTags(nameof(Pantalla));
 
-            // GET /pantallas -> Obtener todas
-            group.MapGet("/", async ([FromServices] IPantallaService service) =>
+            group.MapGet("/", async (
+                [FromServices] IPantallaService service,
+                int? pageNumber, int? pageSize, string? searchTerm,
+                string? sortColumn, string? sortDirection, bool? incluirEliminados) =>
             {
-                return Results.Ok(await service.GetAllAsync());
-            })
-            .WithName("GetAllPantallas")
-            .WithOpenApi();
+                var (items, total) = await service.GetPaginadoAsync(
+                    pageNumber ?? 1, pageSize ?? 10, searchTerm,
+                    sortColumn ?? "",
+                    string.IsNullOrWhiteSpace(sortDirection) ? "ASC" : sortDirection,
+                    incluirEliminados ?? false);
 
-            // GET /pantallas/{id} -> Obtener por llave primaria
-            group.MapGet("/{id}", async ([FromServices] IPantallaService service, int id) =>
+                return Results.Ok(new { pageNumber = pageNumber ?? 1, pageSize = pageSize ?? 10, total, items });
+            })
+            .WithName("GetAllPantallas").WithOpenApi();
+
+            group.MapGet("/{id}", async ([FromServices] IPantallaService service, Guid id) =>
             {
                 var p = await service.GetByIdAsync(id);
                 return p is null ? Results.NotFound() : Results.Ok(p);
             })
-            .WithName("GetPantallaById")
-            .WithOpenApi();
+            .WithName("GetPantallaById").WithOpenApi();
 
-            // POST /pantallas -> Crear
             group.MapPost("/", async ([FromServices] IPantallaService service, [FromBody] Pantalla pantalla) =>
             {
                 var errores = Validar(pantalla);
-                if (errores.Count > 0)
-                {
-                    return Results.BadRequest(new { errores });
-                }
+                if (errores.Count > 0) return Results.BadRequest(new { errores });
 
-                var nuevoId = await service.CreateAsync(pantalla);
-                if (nuevoId <= 0)
-                {
-                    return Results.Problem("No se pudo crear la pantalla");
-                }
+                var creada = await service.CreateAsync(pantalla);
+                if (creada is null) return Results.Problem("No se pudo crear la pantalla");
 
-                pantalla.PantallaID = nuevoId;
-                return Results.Created($"/pantallas/{nuevoId}", pantalla);
+                return Results.Created($"/pantallas/{creada.PantallaID}", creada);
             })
-            .WithName("CreatePantalla")
-            .WithOpenApi();
+            .WithName("CreatePantalla").WithOpenApi();
 
-            // PUT /pantallas/{id} -> Modificar
-            group.MapPut("/{id}", async ([FromServices] IPantallaService service, int id, [FromBody] Pantalla pantalla) =>
+            group.MapPut("/{id}", async ([FromServices] IPantallaService service, Guid id, [FromBody] Pantalla pantalla) =>
             {
                 var errores = Validar(pantalla);
-                if (errores.Count > 0)
-                {
-                    return Results.BadRequest(new { errores });
-                }
+                if (errores.Count > 0) return Results.BadRequest(new { errores });
 
                 var exists = await service.GetByIdAsync(id);
-                if (exists is null)
-                {
-                    return Results.NotFound();
-                }
+                if (exists is null) return Results.NotFound();
 
                 pantalla.PantallaID = id;
-                var updated = await service.UpdateAsync(pantalla);
-                if (updated <= 0)
-                {
-                    return Results.Problem("No se pudo modificar la pantalla");
-                }
+                await service.UpdateAsync(pantalla);
 
                 var current = await service.GetByIdAsync(id) ?? pantalla;
                 return Results.Ok(current);
             })
-            .WithName("UpdatePantalla")
-            .WithOpenApi();
+            .WithName("UpdatePantalla").WithOpenApi();
 
-            // DELETE /pantallas/{id} -> Eliminar
-            group.MapDelete("/{id}", async ([FromServices] IPantallaService service, int id) =>
+            group.MapDelete("/{id}", async ([FromServices] IPantallaService service, Guid id) =>
             {
                 var exists = await service.GetByIdAsync(id);
-                if (exists is null)
-                {
-                    return Results.NotFound();
-                }
+                if (exists is null) return Results.NotFound();
 
-                var deleted = await service.DeleteAsync(id);
-                return deleted > 0 ? Results.NoContent() : Results.Problem("No se pudo eliminar la pantalla");
+                await service.LogicDeleteAsync(id);
+                return Results.NoContent();
             })
-            .WithName("DeletePantalla")
-            .WithOpenApi();
+            .WithName("DeletePantalla").WithOpenApi();
         }
 
-        // Validaciones según criterios de aceptación de SRV7
         private static List<string> Validar(Pantalla pantalla)
         {
             var errores = new List<string>();
-
-            // Solo letras (incluye acentos/ñ), números y espacios
-            var soloLetrasNumerosEspacios = @"^[a-zA-Z0-9 áéíóúÁÉÍÓÚñÑ]+$";
+            var rx = @"^[a-zA-Z0-9 áéíóúÁÉÍÓÚñÑ]+$";
 
             if (string.IsNullOrWhiteSpace(pantalla.NombrePantalla))
-            {
                 errores.Add("El nombre de la pantalla es requerido y no puede ser vacío ni espacios en blanco.");
-            }
             else
             {
                 if (pantalla.NombrePantalla.Length > 100)
-                {
                     errores.Add("El nombre no puede tener más de 100 caracteres.");
-                }
-                if (!Regex.IsMatch(pantalla.NombrePantalla, soloLetrasNumerosEspacios))
-                {
+                if (!Regex.IsMatch(pantalla.NombrePantalla, rx))
                     errores.Add("El nombre solo permite letras, números y espacios.");
-                }
             }
 
             if (string.IsNullOrWhiteSpace(pantalla.Descripcion))
-            {
                 errores.Add("La descripción es requerida y no puede ser vacía ni espacios en blanco.");
-            }
             else
             {
                 if (pantalla.Descripcion.Length > 500)
-                {
                     errores.Add("La descripción no puede tener más de 500 caracteres.");
-                }
-                if (!Regex.IsMatch(pantalla.Descripcion, soloLetrasNumerosEspacios))
-                {
+                if (!Regex.IsMatch(pantalla.Descripcion, rx))
                     errores.Add("La descripción solo permite letras, números y espacios.");
-                }
             }
 
             if (string.IsNullOrWhiteSpace(pantalla.Ruta))
-            {
                 errores.Add("La ruta de acceso es requerida y no puede ser vacía ni espacios en blanco.");
-            }
             else if (pantalla.Ruta.Length > 500)
-            {
                 errores.Add("La ruta no puede tener más de 500 caracteres.");
-            }
 
             return errores;
         }

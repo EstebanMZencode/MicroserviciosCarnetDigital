@@ -12,29 +12,17 @@ namespace MicroServicioPantallas.Services
             _pantallaRepository = pantallaRepository;
         }
 
-        public async Task<IEnumerable<Pantalla>> GetAllAsync()
+        public async Task<(IEnumerable<Pantalla> Items, int Total)> GetPaginadoAsync(
+            int pageNumber, int pageSize, string? searchTerm,
+            string sortColumn, string sortDirection, bool incluirEliminados)
         {
-            return await _pantallaRepository.GetAllAsync();
+            return await _pantallaRepository.GetPaginadoAsync(
+                pageNumber, pageSize, searchTerm, sortColumn, sortDirection, incluirEliminados);
         }
 
-        public async Task<Pantalla?> GetByIdAsync(int id)
-        {
-            return await _pantallaRepository.GetByIdAsync(id);
-        }
-
-        public async Task<int> CreateAsync(Pantalla pantalla)
-        {
-            return await _pantallaRepository.CreateAsync(pantalla);
-        }
-
-        public async Task<int> UpdateAsync(Pantalla pantalla)
-        {
-            return await _pantallaRepository.UpdateAsync(pantalla);
-        }
-
-        public async Task<int> DeleteAsync(int id)
-        {
-            return await _pantallaRepository.DeleteAsync(id);
-        }
+        public async Task<Pantalla?> GetByIdAsync(Guid id) => await _pantallaRepository.GetByIdAsync(id);
+        public async Task<Pantalla?> CreateAsync(Pantalla pantalla) => await _pantallaRepository.CreateAsync(pantalla);
+        public async Task<int> UpdateAsync(Pantalla pantalla) => await _pantallaRepository.UpdateAsync(pantalla);
+        public async Task<int> LogicDeleteAsync(Guid id) => await _pantallaRepository.LogicDeleteAsync(id);
     }
 }
