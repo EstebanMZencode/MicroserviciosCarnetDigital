@@ -1,5 +1,6 @@
 ﻿using Dapper;
 using MicroServicioAutoregistro.Entities;
+using Microsoft.Data.SqlClient;
 
 namespace MicroServicioAutoregistro.Repository;
 
@@ -16,23 +17,23 @@ public class AutoregistroRepository
     {
         using var connection = _connectionFactory.CreateConnection();
         var count = await connection.ExecuteScalarAsync<int>(
-            "SELECT COUNT(*) FROM Usuarios WHERE Email = @Email",
+            "SELECT COUNT(*) FROM [Carnet_Identity_User].[EmailXUsuarios] WHERE Email = @Email AND Estado = 1",
             new { Email = email });
         return count > 0;
     }
 
-    // Obtiene los dominios de la institución desde tiusr23pl_Carnet_Core
-    // Nota: como es otra BD, se usa un connection string separado (CoreConnection)
-    public async Task<IEnumerable<string>> GetDominiosInstitucionAsync(int institucionId, string coreConnectionString)
+    public async Task<IEnumerable<string>> GetDominiosInstitucionAsync(Guid institucionId, string coreConnectionString)
     {
-        using var connection = new MySqlConnector.MySqlConnection(coreConnectionString);
-        var dominios = await connection.QueryAsync<string>(
-            "SELECT Dominio FROM DominiosInstituciones WHERE InstitucionId = @Id",
-            new { Id = institucionId });
-        return dominios;
+        using var connection = new SqlConnection(coreConnectionString);
+        return await connection.QueryAsync<string>(
+            @"SELECT NombreDominio 
+              FROM [Carnet_Core_User].[DominiosInstituciones]
+              WHERE InstitucionID = @InstitucionID AND Estado = 1",
+            new { InstitucionID = institucionId });
     }
 
-    public async Task<int> CreateUsuarioAsync(UsuarioRegistro usuario, string contrasenaHash, string tokenConfirmacion, DateTime tokenExpiracion)
+    public async Task<Guid> CreateUsuarioAsync(UsuarioRegistro usuario, string passwordHash,
+        string tokenConfirmacion, DateTime tokenExpiracion)
     {
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -40,70 +41,105 @@ public class AutoregistroRepository
 
         try
         {
-            // Insertar en tabla Usuarios
-            var userId = await connection.ExecuteScalarAsync<int>(
-                @"INSERT INTO Usuarios 
-                    (Email, TipoIdentificacionId, Identificacion, NombreCompleto, InstitucionId, 
-                     Contrasena, TipoUsuarioId, RolId, Estado, TokenConfirmacion, TokenExpiracion)
-                  VALUES 
-                    (@Email, @TipoIdentificacionId, @Identificacion, @NombreCompleto, @InstitucionId,
-                     @Contrasena, @TipoUsuarioId, @RolId, 'PENDIENTE', @Token, @Expiracion);
-                  SELECT LAST_INSERT_ID();",
+            var usuarioId = Guid.NewGuid();
+
+            // 1. Obtener EstadoID de PENDIENTE
+            var estadoId = await connection.ExecuteScalarAsync<Guid>(
+                "SELECT EstadoID FROM [Carnet_Identity_User].[EstadosUsuarios] WHERE NombreEstado = 'PENDIENTE'",
+                transaction: transaction);
+
+            // 2. Insertar Usuarios
+            await connection.ExecuteAsync(
+                @"INSERT INTO [Carnet_Identity_User].[Usuarios]
+                    (UsuarioID, TipoIdentID, Identificacion, NombreCompleto, EstadoID)
+                  VALUES
+                    (@UsuarioID, @TipoIdentID, @Identificacion, @NombreCompleto, @EstadoID)",
+                new
+                {
+                    UsuarioID = usuarioId,
+                    usuario.TipoIdentID,
+                    usuario.Identificacion,
+                    usuario.NombreCompleto,
+                    EstadoID = estadoId
+                }, transaction);
+
+            // 3. Insertar EmailXUsuarios
+            await connection.ExecuteAsync(
+                @"INSERT INTO [Carnet_Identity_User].[EmailXUsuarios]
+                    (Email, UsuarioID, InstitucionID)
+                  VALUES
+                    (@Email, @UsuarioID, @InstitucionID)",
                 new
                 {
                     usuario.Email,
-                    usuario.TipoIdentificacionId,
-                    usuario.Identificacion,
-                    usuario.NombreCompleto,
-                    usuario.InstitucionId,
-                    Contrasena = contrasenaHash,
-                    usuario.TipoUsuarioId,
-                    usuario.RolId,
-                    Token = tokenConfirmacion,
-                    Expiracion = tokenExpiracion
+                    UsuarioID = usuarioId,
+                    usuario.InstitucionID
                 }, transaction);
 
-            // Insertar en EmailXUsuarios
+            // 4. Insertar Login con contraseña hasheada y token de confirmación en PasswordHash temporalmente
             await connection.ExecuteAsync(
-                "INSERT INTO EmailXUsuarios (UsuarioId, Email) VALUES (@UsuarioId, @Email)",
-                new { UsuarioId = userId, usuario.Email }, transaction);
+                @"INSERT INTO [Carnet_Identity_User].[Login]
+                    (Email, PasswordHash)
+                  VALUES
+                    (@Email, @PasswordHash)",
+                new
+                {
+                    usuario.Email,
+                    PasswordHash = $"{passwordHash}|TOKEN:{tokenConfirmacion}|EXP:{tokenExpiracion:O}"
+                }, transaction);
 
-            // Insertar en EstadosUsuarios
+            // 5. Insertar UsuariosXInstituciones
+            var uxiId = Guid.NewGuid();
             await connection.ExecuteAsync(
-                "INSERT INTO EstadosUsuarios (UsuarioId, Estado) VALUES (@UsuarioId, 'PENDIENTE')",
-                new { UsuarioId = userId }, transaction);
+                @"INSERT INTO [Carnet_Identity_User].[UsuariosXInstituciones]
+                    (UXIID, UsuarioID, InstitucionID, TipoUsuarioID, RolID, FechaVencimientoCarnet)
+                  VALUES
+                    (@UXIID, @UsuarioID, @InstitucionID, @TipoUsuarioID, @RolID, @FechaVencimientoCarnet)",
+                new
+                {
+                    UXIID = uxiId,
+                    UsuarioID = usuarioId,
+                    usuario.InstitucionID,
+                    usuario.TipoUsuarioID,
+                    usuario.RolID,
+                    usuario.FechaVencimientoCarnet
+                }, transaction);
 
-            // Insertar en UsuariosXInstituciones
-            await connection.ExecuteAsync(
-                "INSERT INTO UsuariosXInstituciones (UsuarioId, InstitucionId) VALUES (@UsuarioId, @InstitucionId)",
-                new { UsuarioId = userId, usuario.InstitucionId }, transaction);
-
-            // Carreras (si es estudiante)
-            foreach (var carreraId in usuario.CarrerasIds)
+            // 6. Insertar carreras
+            foreach (var carreraId in usuario.CarrerasIDs)
             {
                 await connection.ExecuteAsync(
-                    "INSERT INTO UsuariosXCarreras (UsuarioId, CarreraId) VALUES (@UsuarioId, @CarreraId)",
-                    new { UsuarioId = userId, CarreraId = carreraId }, transaction);
+                    @"INSERT INTO [Carnet_Identity_User].[UsuariosXCarreras]
+                        (UXC_ID, UXIID, CarreraID)
+                      VALUES
+                        (NEWID(), @UXIID, @CarreraID)",
+                    new { UXIID = uxiId, CarreraID = carreraId }, transaction);
             }
 
-            // Áreas (si es funcionario)
-            foreach (var areaId in usuario.AreasIds)
+            // 7. Insertar áreas de trabajo
+            foreach (var areaId in usuario.AreasTrabajoIDs)
             {
                 await connection.ExecuteAsync(
-                    "INSERT INTO UsuariosXAreasTrabajo (UsuarioId, AreaId) VALUES (@UsuarioId, @AreaId)",
-                    new { UsuarioId = userId, AreaId = areaId }, transaction);
+                    @"INSERT INTO [Carnet_Identity_User].[UsuariosXAreasTrabajo]
+                        (UXAT_ID, UXIID, AreaTrabID)
+                      VALUES
+                        (NEWID(), @UXIID, @AreaTrabID)",
+                    new { UXIID = uxiId, AreaTrabID = areaId }, transaction);
             }
 
-            // Teléfonos (opcionales)
+            // 8. Insertar teléfonos (opcionales)
             foreach (var telefono in usuario.Telefonos)
             {
                 await connection.ExecuteAsync(
-                    "INSERT INTO TelefonosUsuarios (UsuarioId, Telefono) VALUES (@UsuarioId, @Telefono)",
-                    new { UsuarioId = userId, Telefono = telefono }, transaction);
+                    @"INSERT INTO [Carnet_Identity_User].[TelefonosUsuarios]
+                        (TelID, UsuarioID, Telefono)
+                      VALUES
+                        (NEWID(), @UsuarioID, @Telefono)",
+                    new { UsuarioID = usuarioId, Telefono = telefono }, transaction);
             }
 
             await transaction.CommitAsync();
-            return userId;
+            return usuarioId;
         }
         catch
         {
@@ -112,21 +148,36 @@ public class AutoregistroRepository
         }
     }
 
-    public async Task<(bool Exists, bool Expired, int UsuarioId)> GetTokenDataAsync(string token)
+    public async Task<(bool Exists, bool Expired, string Email)> GetTokenDataAsync(string token)
     {
         using var connection = _connectionFactory.CreateConnection();
-        var result = await connection.QueryFirstOrDefaultAsync(
-            "SELECT Id, TokenExpiracion FROM Usuarios WHERE TokenConfirmacion = @Token AND Estado = 'PENDIENTE'",
-            new { Token = token });
 
-        if (result is null)
-            return (false, false, 0);
+        // El token está almacenado en PasswordHash en formato: "hash|TOKEN:xxx|EXP:fecha"
+        var logins = await connection.QueryAsync<dynamic>(
+            @"SELECT L.Email, L.PasswordHash
+              FROM [Carnet_Identity_User].[Login] L
+              INNER JOIN [Carnet_Identity_User].[Usuarios] U 
+                ON L.Email = (SELECT Email FROM [Carnet_Identity_User].[EmailXUsuarios] WHERE UsuarioID = U.UsuarioID)
+              INNER JOIN [Carnet_Identity_User].[EstadosUsuarios] E 
+                ON U.EstadoID = E.EstadoID
+              WHERE E.NombreEstado = 'PENDIENTE'
+                AND L.PasswordHash LIKE @TokenPattern",
+            new { TokenPattern = $"%TOKEN:{token}%" });
 
-        bool expired = result.TokenExpiracion < DateTime.UtcNow;
-        return (true, expired, (int)result.Id);
+        var login = logins.FirstOrDefault();
+        if (login is null) return (false, false, string.Empty);
+
+        // Extraer fecha de expiración del PasswordHash
+        string passwordHash = login.PasswordHash;
+        var expPart = passwordHash.Split("|EXP:").LastOrDefault();
+        if (expPart is null || !DateTime.TryParse(expPart, out var expiracion))
+            return (true, true, string.Empty);
+
+        bool expired = DateTime.UtcNow > expiracion;
+        return (true, expired, (string)login.Email);
     }
 
-    public async Task ConfirmarUsuarioAsync(int usuarioId)
+    public async Task ConfirmarUsuarioAsync(string email)
     {
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -134,13 +185,35 @@ public class AutoregistroRepository
 
         try
         {
+            // Obtener EstadoID de ACTIVO
+            var estadoActivoId = await connection.ExecuteScalarAsync<Guid>(
+                "SELECT EstadoID FROM [Carnet_Identity_User].[EstadosUsuarios] WHERE NombreEstado = 'ACTIVO'",
+                transaction: transaction);
+
+            // Obtener UsuarioID
+            var usuarioId = await connection.ExecuteScalarAsync<Guid>(
+                "SELECT UsuarioID FROM [Carnet_Identity_User].[EmailXUsuarios] WHERE Email = @Email",
+                new { Email = email }, transaction);
+
+            // Actualizar estado del usuario
             await connection.ExecuteAsync(
-                "UPDATE Usuarios SET Estado = 'ACTIVO', TokenConfirmacion = NULL, TokenExpiracion = NULL WHERE Id = @Id",
-                new { Id = usuarioId }, transaction);
+                @"UPDATE [Carnet_Identity_User].[Usuarios]
+                  SET EstadoID = @EstadoID, FechaModificacion = SYSUTCDATETIME()
+                  WHERE UsuarioID = @UsuarioID",
+                new { EstadoID = estadoActivoId, UsuarioID = usuarioId }, transaction);
+
+            // Limpiar token del PasswordHash — dejar solo el hash real
+            var passwordHash = await connection.ExecuteScalarAsync<string>(
+                "SELECT PasswordHash FROM [Carnet_Identity_User].[Login] WHERE Email = @Email",
+                new { Email = email }, transaction);
+
+            var hashLimpio = passwordHash?.Split("|TOKEN:").FirstOrDefault() ?? string.Empty;
 
             await connection.ExecuteAsync(
-                "UPDATE EstadosUsuarios SET Estado = 'ACTIVO' WHERE UsuarioId = @Id",
-                new { Id = usuarioId }, transaction);
+                @"UPDATE [Carnet_Identity_User].[Login]
+                  SET PasswordHash = @PasswordHash, FechaModificacion = SYSUTCDATETIME()
+                  WHERE Email = @Email",
+                new { PasswordHash = hashLimpio, Email = email }, transaction);
 
             await transaction.CommitAsync();
         }

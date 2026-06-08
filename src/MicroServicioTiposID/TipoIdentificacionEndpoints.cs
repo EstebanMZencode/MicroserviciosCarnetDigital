@@ -14,7 +14,7 @@ public static class TipoIdentificacionEndpoints
             Results.Ok(await service.GetAllAsync()));
 
         // GET /tiposidentificacion/{id}
-        group.MapGet("/{id:int}", async (int id, ITipoIdentificacionService service) =>
+        group.MapGet("/{id:guid}", async (Guid id, ITipoIdentificacionService service) =>
         {
             var tipo = await service.GetByIdAsync(id);
             return tipo is null
@@ -23,25 +23,25 @@ public static class TipoIdentificacionEndpoints
         });
 
         // POST /tiposidentificacion
-        group.MapPost("/", async (TipoIdentificacion tipo, ITipoIdentificacionService service) =>
+        group.MapPost("/", async (TipoIdentificacionRequest request, ITipoIdentificacionService service) =>
         {
-            var (success, message, newId) = await service.CreateAsync(tipo);
+            var (success, message, newId) = await service.CreateAsync(request);
             return success
                 ? Results.Created($"/tiposidentificacion/{newId}", new { id = newId, message })
                 : Results.BadRequest(new { message });
         });
 
         // PUT /tiposidentificacion/{id}
-        group.MapPut("/{id:int}", async (int id, TipoIdentificacion tipo, ITipoIdentificacionService service) =>
+        group.MapPut("/{id:guid}", async (Guid id, TipoIdentificacionRequest request, ITipoIdentificacionService service) =>
         {
-            var (success, message) = await service.UpdateAsync(id, tipo);
+            var (success, message) = await service.UpdateAsync(id, request);
             return success
                 ? Results.Ok(new { message })
                 : Results.BadRequest(new { message });
         });
 
         // DELETE /tiposidentificacion/{id}
-        group.MapDelete("/{id:int}", async (int id, ITipoIdentificacionService service) =>
+        group.MapDelete("/{id:guid}", async (Guid id, ITipoIdentificacionService service) =>
         {
             var (success, message) = await service.DeleteAsync(id);
             return success

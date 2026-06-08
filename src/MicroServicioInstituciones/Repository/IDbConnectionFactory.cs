@@ -1,8 +1,8 @@
-﻿using MySqlConnector;
+﻿using Microsoft.Data.SqlClient;
 
 namespace MicroServicioInstituciones.Repository;
 
 public interface IDbConnectionFactory
 {
-    MySqlConnection CreateConnection();
+    SqlConnection CreateConnection();
 }

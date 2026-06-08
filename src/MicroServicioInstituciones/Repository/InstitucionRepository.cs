@@ -16,33 +16,38 @@ public class InstitucionRepository
     {
         using var connection = _connectionFactory.CreateConnection();
 
-        // TODO: ajustar nombres de columnas cuando se confirme estructura real
         var instituciones = (await connection.QueryAsync<Institucion>(
-            "SELECT Id, Nombre, Email, Telefono FROM Instituciones")).ToList();
+            @"SELECT InstitucionID, NombreInstitucion, Email, Telefono, Estado, 
+                     FechaCreacion, FechaModificacion
+              FROM [Carnet_Core_User].[Instituciones]
+              WHERE Estado = 1")).ToList();
 
         foreach (var inst in instituciones)
         {
-            inst.Dominios = (await GetDominiosAsync(connection, inst.Id)).ToList();
+            inst.Dominios = (await GetDominiosAsync(connection, inst.InstitucionID)).ToList();
         }
 
         return instituciones;
     }
 
-    public async Task<Institucion?> GetByIdAsync(int id)
+    public async Task<Institucion?> GetByIdAsync(Guid id)
     {
         using var connection = _connectionFactory.CreateConnection();
 
         var inst = await connection.QueryFirstOrDefaultAsync<Institucion>(
-            "SELECT Id, Nombre, Email, Telefono FROM Instituciones WHERE Id = @Id",
-            new { Id = id });
+            @"SELECT InstitucionID, NombreInstitucion, Email, Telefono, Estado,
+                     FechaCreacion, FechaModificacion
+              FROM [Carnet_Core_User].[Instituciones]
+              WHERE InstitucionID = @InstitucionID AND Estado = 1",
+            new { InstitucionID = id });
 
         if (inst is null) return null;
 
-        inst.Dominios = (await GetDominiosAsync(connection, inst.Id)).ToList();
+        inst.Dominios = (await GetDominiosAsync(connection, inst.InstitucionID)).ToList();
         return inst;
     }
 
-    public async Task<int> CreateAsync(InstitucionRequest request)
+    public async Task<Guid> CreateAsync(InstitucionRequest request)
     {
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -50,21 +55,33 @@ public class InstitucionRepository
 
         try
         {
-            var id = await connection.ExecuteScalarAsync<int>(
-                @"INSERT INTO Instituciones (Nombre, Email, Telefono)
-                  VALUES (@Nombre, @Email, @Telefono);
-                  SELECT LAST_INSERT_ID();",
-                request, transaction);
+            var newId = Guid.NewGuid();
+
+            await connection.ExecuteAsync(
+                @"INSERT INTO [Carnet_Core_User].[Instituciones] 
+                    (InstitucionID, NombreInstitucion, Email, Telefono)
+                  VALUES 
+                    (@InstitucionID, @NombreInstitucion, @Email, @Telefono)",
+                new
+                {
+                    InstitucionID = newId,
+                    request.NombreInstitucion,
+                    request.Email,
+                    request.Telefono
+                }, transaction);
 
             foreach (var dominio in request.Dominios)
             {
                 await connection.ExecuteAsync(
-                    "INSERT INTO DominiosInstituciones (InstitucionId, Dominio) VALUES (@InstitucionId, @Dominio)",
-                    new { InstitucionId = id, Dominio = dominio }, transaction);
+                    @"INSERT INTO [Carnet_Core_User].[DominiosInstitucion]
+                        (DominioID, InstitucionID, NombreDominio)
+                      VALUES 
+                        (NEWID(), @InstitucionID, @NombreDominio)",
+                    new { InstitucionID = newId, NombreDominio = dominio }, transaction);
             }
 
             await transaction.CommitAsync();
-            return id;
+            return newId;
         }
         catch
         {
@@ -73,7 +90,7 @@ public class InstitucionRepository
         }
     }
 
-    public async Task<bool> UpdateAsync(int id, InstitucionRequest request)
+    public async Task<bool> UpdateAsync(Guid id, InstitucionRequest request)
     {
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -82,11 +99,19 @@ public class InstitucionRepository
         try
         {
             var rows = await connection.ExecuteAsync(
-                @"UPDATE Instituciones
-                  SET Nombre = @Nombre, Email = @Email, Telefono = @Telefono
-                  WHERE Id = @Id",
-                new { request.Nombre, request.Email, request.Telefono, Id = id },
-                transaction);
+                @"UPDATE [Carnet_Core_User].[Instituciones]
+                  SET NombreInstitucion = @NombreInstitucion,
+                      Email = @Email,
+                      Telefono = @Telefono,
+                      FechaModificacion = SYSUTCDATETIME()
+                  WHERE InstitucionID = @InstitucionID AND Estado = 1",
+                new
+                {
+                    InstitucionID = id,
+                    request.NombreInstitucion,
+                    request.Email,
+                    request.Telefono
+                }, transaction);
 
             if (rows == 0)
             {
@@ -94,16 +119,21 @@ public class InstitucionRepository
                 return false;
             }
 
-            // Reemplazar dominios
+            // Soft delete dominios anteriores y reinsertar
             await connection.ExecuteAsync(
-                "DELETE FROM DominiosInstituciones WHERE InstitucionId = @Id",
-                new { Id = id }, transaction);
+                @"UPDATE [Carnet_Core_User].[DominiosInstitucion]
+                  SET Estado = 0, FechaModificacion = SYSUTCDATETIME()
+                  WHERE InstitucionID = @InstitucionID",
+                new { InstitucionID = id }, transaction);
 
             foreach (var dominio in request.Dominios)
             {
                 await connection.ExecuteAsync(
-                    "INSERT INTO DominiosInstituciones (InstitucionId, Dominio) VALUES (@InstitucionId, @Dominio)",
-                    new { InstitucionId = id, Dominio = dominio }, transaction);
+                    @"INSERT INTO [Carnet_Core_User].[DominiosInstitucion]
+                        (DominioID, InstitucionID, NombreDominio)
+                      VALUES 
+                        (NEWID(), @InstitucionID, @NombreDominio)",
+                    new { InstitucionID = id, NombreDominio = dominio }, transaction);
             }
 
             await transaction.CommitAsync();
@@ -116,7 +146,7 @@ public class InstitucionRepository
         }
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(Guid id)
     {
         using var connection = _connectionFactory.CreateConnection();
         await connection.OpenAsync();
@@ -124,14 +154,19 @@ public class InstitucionRepository
 
         try
         {
-            // Primero borrar dominios (FK)
+            // Soft delete dominios
             await connection.ExecuteAsync(
-                "DELETE FROM DominiosInstituciones WHERE InstitucionId = @Id",
-                new { Id = id }, transaction);
+                @"UPDATE [Carnet_Core_User].[DominiosInstitucion]
+                  SET Estado = 0, FechaModificacion = SYSUTCDATETIME()
+                  WHERE InstitucionID = @InstitucionID",
+                new { InstitucionID = id }, transaction);
 
+            // Soft delete institución
             var rows = await connection.ExecuteAsync(
-                "DELETE FROM Instituciones WHERE Id = @Id",
-                new { Id = id }, transaction);
+                @"UPDATE [Carnet_Core_User].[Instituciones]
+                  SET Estado = 0, FechaModificacion = SYSUTCDATETIME()
+                  WHERE InstitucionID = @InstitucionID AND Estado = 1",
+                new { InstitucionID = id }, transaction);
 
             await transaction.CommitAsync();
             return rows > 0;
@@ -143,12 +178,14 @@ public class InstitucionRepository
         }
     }
 
-    // Helper privado — reutiliza la conexión abierta
-    private static async Task<IEnumerable<string>> GetDominiosAsync(MySqlConnector.MySqlConnection connection, int institucionId)
+    private static async Task<IEnumerable<string>> GetDominiosAsync(
+        Microsoft.Data.SqlClient.SqlConnection connection, Guid institucionId)
     {
-        var dominios = await connection.QueryAsync<DominioInstitucion>(
-            "SELECT Id, InstitucionId, Dominio FROM DominiosInstituciones WHERE InstitucionId = @Id",
-            new { Id = institucionId });
-        return dominios.Select(d => d.Dominio);
+        var dominios = await connection.QueryAsync<string>(
+            @"SELECT NombreDominio 
+              FROM [Carnet_Core_User].[DominiosInstitucion]
+              WHERE InstitucionID = @InstitucionID AND Estado = 1",
+            new { InstitucionID = institucionId });
+        return dominios;
     }
 }

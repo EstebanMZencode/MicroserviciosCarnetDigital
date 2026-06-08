@@ -7,14 +7,14 @@ public static class InstitucionEndpoints
 {
     public static void MapInstitucionEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/institucion");
+        var group = app.MapGroup("/institucion").RequireAuthorization();
 
         // GET /institucion
         group.MapGet("/", async (IInstitucionService service) =>
             Results.Ok(await service.GetAllAsync()));
 
         // GET /institucion/{id}
-        group.MapGet("/{id:int}", async (int id, IInstitucionService service) =>
+        group.MapGet("/{id:guid}", async (Guid id, IInstitucionService service) =>
         {
             var institucion = await service.GetByIdAsync(id);
             return institucion is null
@@ -32,7 +32,7 @@ public static class InstitucionEndpoints
         });
 
         // PUT /institucion/{id}
-        group.MapPut("/{id:int}", async (int id, InstitucionRequest request, IInstitucionService service) =>
+        group.MapPut("/{id:guid}", async (Guid id, InstitucionRequest request, IInstitucionService service) =>
         {
             var (success, message) = await service.UpdateAsync(id, request);
             return success
@@ -41,7 +41,7 @@ public static class InstitucionEndpoints
         });
 
         // DELETE /institucion/{id}
-        group.MapDelete("/{id:int}", async (int id, IInstitucionService service) =>
+        group.MapDelete("/{id:guid}", async (Guid id, IInstitucionService service) =>
         {
             var (success, message) = await service.DeleteAsync(id);
             return success

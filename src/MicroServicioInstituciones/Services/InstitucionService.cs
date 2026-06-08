@@ -16,20 +16,20 @@ public class InstitucionService : IInstitucionService
     public async Task<IEnumerable<Institucion>> GetAllAsync()
         => await _repository.GetAllAsync();
 
-    public async Task<Institucion?> GetByIdAsync(int id)
+    public async Task<Institucion?> GetByIdAsync(Guid id)
         => await _repository.GetByIdAsync(id);
 
-    public async Task<(bool Success, string Message, int Id)> CreateAsync(InstitucionRequest request)
+    public async Task<(bool Success, string Message, Guid Id)> CreateAsync(InstitucionRequest request)
     {
         var validation = Validate(request);
         if (!validation.IsValid)
-            return (false, validation.Error, 0);
+            return (false, validation.Error, Guid.Empty);
 
         var id = await _repository.CreateAsync(request);
         return (true, "Institución creada exitosamente.", id);
     }
 
-    public async Task<(bool Success, string Message)> UpdateAsync(int id, InstitucionRequest request)
+    public async Task<(bool Success, string Message)> UpdateAsync(Guid id, InstitucionRequest request)
     {
         var validation = Validate(request);
         if (!validation.IsValid)
@@ -45,7 +45,7 @@ public class InstitucionService : IInstitucionService
             : (false, "No se pudo actualizar la institución.");
     }
 
-    public async Task<(bool Success, string Message)> DeleteAsync(int id)
+    public async Task<(bool Success, string Message)> DeleteAsync(Guid id)
     {
         var existing = await _repository.GetByIdAsync(id);
         if (existing is null)
@@ -57,8 +57,8 @@ public class InstitucionService : IInstitucionService
 
     private static (bool IsValid, string Error) Validate(InstitucionRequest r)
     {
-        if (string.IsNullOrWhiteSpace(r.Nombre))
-            return (false, "El nombre es requerido.");
+        if (string.IsNullOrWhiteSpace(r.NombreInstitucion))
+            return (false, "El nombre de la institución es requerido.");
 
         if (string.IsNullOrWhiteSpace(r.Email))
             return (false, "El email es requerido.");

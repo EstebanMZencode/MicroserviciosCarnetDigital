@@ -7,10 +7,10 @@ public static class AutoregistroEndpoints
 {
     public static void MapAutoregistroEndpoints(this WebApplication app)
     {
-        // Sin RequireAuthorization() — SRV11 no requiere JWT
+        // Sin RequireAuthorization — SRV11 no requiere JWT según el PDF
         var group = app.MapGroup("/autoregistro");
 
-        // POST /autoregistro — registrar nuevo usuario
+        // POST /autoregistro
         group.MapPost("/", async (UsuarioRegistro usuario, IAutoregistroService service) =>
         {
             var (success, message) = await service.RegistrarAsync(usuario);
@@ -19,7 +19,7 @@ public static class AutoregistroEndpoints
                 : Results.BadRequest(new { message });
         });
 
-        // GET /autoregistro/confirmar?token=... — confirmar cuenta via enlace del email
+        // GET /autoregistro/confirmar?token=...
         group.MapGet("/confirmar", async (string token, IAutoregistroService service) =>
         {
             var (success, message) = await service.ConfirmarAsync(token);

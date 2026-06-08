@@ -16,41 +16,56 @@ public class TipoIdentificacionRepository
     {
         using var connection = _connectionFactory.CreateConnection();
         return await connection.QueryAsync<TipoIdentificacion>(
-            "SELECT Id, Nombre FROM TiposIdentificaciones");
+            @"SELECT TipoIdentID, NombreTipoIdent, Estado, FechaCreacion, FechaModificacion
+              FROM [Carnet_Identity_User].[TiposIdentificaciones]
+              WHERE Estado = 1");
     }
 
-    public async Task<TipoIdentificacion?> GetByIdAsync(int id)
+    public async Task<TipoIdentificacion?> GetByIdAsync(Guid id)
     {
         using var connection = _connectionFactory.CreateConnection();
         return await connection.QueryFirstOrDefaultAsync<TipoIdentificacion>(
-            "SELECT Id, Nombre FROM TiposIdentificaciones WHERE Id = @Id",
-            new { Id = id });
+            @"SELECT TipoIdentID, NombreTipoIdent, Estado, FechaCreacion, FechaModificacion
+              FROM [Carnet_Identity_User].[TiposIdentificaciones]
+              WHERE TipoIdentID = @TipoIdentID AND Estado = 1",
+            new { TipoIdentID = id });
     }
 
-    public async Task<int> CreateAsync(TipoIdentificacion tipo)
+    public async Task<Guid> CreateAsync(TipoIdentificacionRequest request)
     {
         using var connection = _connectionFactory.CreateConnection();
-        return await connection.ExecuteScalarAsync<int>(
-            @"INSERT INTO TiposIdentificaciones (Nombre) VALUES (@Nombre);
-              SELECT LAST_INSERT_ID();",
-            tipo);
+        var newId = Guid.NewGuid();
+
+        await connection.ExecuteAsync(
+            @"INSERT INTO [Carnet_Identity_User].[TiposIdentificaciones]
+                (TipoIdentID, NombreTipoIdent)
+              VALUES
+                (@TipoIdentID, @NombreTipoIdent)",
+            new { TipoIdentID = newId, request.NombreTipoIdent });
+
+        return newId;
     }
 
-    public async Task<bool> UpdateAsync(TipoIdentificacion tipo)
+    public async Task<bool> UpdateAsync(Guid id, TipoIdentificacionRequest request)
     {
         using var connection = _connectionFactory.CreateConnection();
         var rows = await connection.ExecuteAsync(
-            "UPDATE TiposIdentificaciones SET Nombre = @Nombre WHERE Id = @Id",
-            tipo);
+            @"UPDATE [Carnet_Identity_User].[TiposIdentificaciones]
+              SET NombreTipoIdent = @NombreTipoIdent,
+                  FechaModificacion = SYSUTCDATETIME()
+              WHERE TipoIdentID = @TipoIdentID AND Estado = 1",
+            new { TipoIdentID = id, request.NombreTipoIdent });
         return rows > 0;
     }
 
-    public async Task<bool> DeleteAsync(int id)
+    public async Task<bool> DeleteAsync(Guid id)
     {
         using var connection = _connectionFactory.CreateConnection();
         var rows = await connection.ExecuteAsync(
-            "DELETE FROM TiposIdentificaciones WHERE Id = @Id",
-            new { Id = id });
+            @"UPDATE [Carnet_Identity_User].[TiposIdentificaciones]
+              SET Estado = 0, FechaModificacion = SYSUTCDATETIME()
+              WHERE TipoIdentID = @TipoIdentID AND Estado = 1",
+            new { TipoIdentID = id });
         return rows > 0;
     }
 }

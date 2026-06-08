@@ -2,6 +2,14 @@
 
 public class TipoIdentificacion
 {
-    public int Id { get; set; }
-    public string Nombre { get; set; } = string.Empty;
+    public Guid TipoIdentID { get; set; }
+    public string NombreTipoIdent { get; set; } = string.Empty;
+    public bool Estado { get; set; }
+    public DateTime FechaCreacion { get; set; }
+    public DateTime FechaModificacion { get; set; }
+}
+
+public class TipoIdentificacionRequest
+{
+    public string NombreTipoIdent { get; set; } = string.Empty;
 }

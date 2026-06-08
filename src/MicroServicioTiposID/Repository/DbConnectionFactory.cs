@@ -1,4 +1,4 @@
-﻿using MySqlConnector;
+﻿using Microsoft.Data.SqlClient;
 
 namespace MicroServicioTiposID.Repository;
 
@@ -12,8 +12,8 @@ public class DbConnectionFactory : IDbConnectionFactory
             ?? throw new InvalidOperationException("Connection string 'DefaultConnection' not found.");
     }
 
-    public MySqlConnection CreateConnection()
+    public SqlConnection CreateConnection()
     {
-        return new MySqlConnection(_connectionString);
+        return new SqlConnection(_connectionString);
     }
 }

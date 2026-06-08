@@ -21,7 +21,7 @@ public class AutoregistroService : IAutoregistroService
 
     public async Task<(bool Success, string Message)> RegistrarAsync(UsuarioRegistro usuario)
     {
-        // Validaciones requeridas
+        // Validaciones
         if (string.IsNullOrWhiteSpace(usuario.Email))
             return (false, "El email es requerido.");
 
@@ -37,33 +37,35 @@ public class AutoregistroService : IAutoregistroService
         if (string.IsNullOrWhiteSpace(usuario.Contrasena))
             return (false, "La contraseña es requerida.");
 
-        if (usuario.TipoIdentificacionId <= 0)
+        if (usuario.TipoIdentID == Guid.Empty)
             return (false, "El tipo de identificación es requerido.");
 
-        if (usuario.InstitucionId <= 0)
+        if (usuario.InstitucionID == Guid.Empty)
             return (false, "La institución es requerida.");
 
-        if (usuario.TipoUsuarioId <= 0)
+        if (usuario.TipoUsuarioID == Guid.Empty)
             return (false, "El tipo de usuario es requerido.");
 
-        if (usuario.RolId <= 0)
+        if (usuario.RolID == Guid.Empty)
             return (false, "El rol es requerido.");
 
-        // Validar dominio del email contra los dominios de la institución
+        if (usuario.FechaVencimientoCarnet == default)
+            return (false, "La fecha de vencimiento del carnet es requerida.");
+
+        // Validar dominio del email
         var coreConnection = _configuration.GetConnectionString("CoreConnection")
             ?? throw new InvalidOperationException("CoreConnection no configurado.");
 
-        var dominios = await _repository.GetDominiosInstitucionAsync(usuario.InstitucionId, coreConnection);
-        var dominiosList = dominios.ToList();
+        var dominios = (await _repository.GetDominiosInstitucionAsync(usuario.InstitucionID, coreConnection)).ToList();
 
-        if (!dominiosList.Any())
+        if (!dominios.Any())
             return (false, "Institución no encontrada o sin dominios configurados.");
 
         var emailDominio = usuario.Email.Split('@').Last().ToLower();
-        if (!dominiosList.Any(d => d.Trim().ToLower() == emailDominio))
-            return (false, $"El email debe pertenecer a uno de los dominios de la institución: {string.Join(", ", dominiosList)}");
+        if (!dominios.Any(d => d.Trim().ToLower() == emailDominio))
+            return (false, $"El email debe pertenecer a uno de los dominios: {string.Join(", ", dominios)}");
 
-        // Verificar que el email no exista
+        // Verificar email duplicado
         if (await _repository.EmailExistsAsync(usuario.Email))
             return (false, "Ya existe un usuario registrado con ese email.");
 
@@ -74,13 +76,11 @@ public class AutoregistroService : IAutoregistroService
         var token = Convert.ToBase64String(RandomNumberGenerator.GetBytes(64))
             .Replace("+", "-").Replace("/", "_").Replace("=", "");
 
-        var minutosExpiracion = int.Parse(_configuration["App:TokenExpirationMinutes"] ?? "15");
-        var expiracion = DateTime.UtcNow.AddMinutes(minutosExpiracion);
+        var minutos = int.Parse(_configuration["App:TokenExpirationMinutes"] ?? "15");
+        var expiracion = DateTime.UtcNow.AddMinutes(minutos);
 
-        // Crear usuario
         await _repository.CreateUsuarioAsync(usuario, hash, token, expiracion);
 
-        // Enviar email de confirmación
         await EnviarEmailConfirmacionAsync(usuario.Email, usuario.NombreCompleto, token);
 
         return (true, "Registro exitoso. Revisá tu email para confirmar tu cuenta.");
@@ -91,7 +91,7 @@ public class AutoregistroService : IAutoregistroService
         if (string.IsNullOrWhiteSpace(token))
             return (false, "El token es requerido.");
 
-        var (exists, expired, usuarioId) = await _repository.GetTokenDataAsync(token);
+        var (exists, expired, email) = await _repository.GetTokenDataAsync(token);
 
         if (!exists)
             return (false, "Token no válido o ya fue utilizado.");
@@ -99,7 +99,7 @@ public class AutoregistroService : IAutoregistroService
         if (expired)
             return (false, "El enlace de confirmación ha vencido. Por favor realizá el registro nuevamente.");
 
-        await _repository.ConfirmarUsuarioAsync(usuarioId);
+        await _repository.ConfirmarUsuarioAsync(email);
         return (true, "Cuenta confirmada exitosamente. Ya podés iniciar sesión.");
     }
 
@@ -118,29 +118,21 @@ public class AutoregistroService : IAutoregistroService
             var minutos = _configuration["App:TokenExpirationMinutes"] ?? "15";
             var enlace = $"{baseUrl}/autoregistro/confirmar?token={token}";
 
-            var smtpHost = _configuration["Smtp:Host"] ?? "smtp.gmail.com";
-            var smtpPort = int.Parse(_configuration["Smtp:Port"] ?? "587");
-            var smtpUser = _configuration["Smtp:User"] ?? "";
-            var smtpPass = _configuration["Smtp:Password"] ?? "";
-            var remitente = _configuration["Smtp:From"] ?? smtpUser;
-
-            using var client = new SmtpClient(smtpHost, smtpPort)
+            using var client = new SmtpClient(_configuration["Smtp:Host"], int.Parse(_configuration["Smtp:Port"] ?? "587"))
             {
-                Credentials = new NetworkCredential(smtpUser, smtpPass),
+                Credentials = new NetworkCredential(_configuration["Smtp:User"], _configuration["Smtp:Password"]),
                 EnableSsl = true
             };
 
-            var mensaje = new MailMessage(remitente, destinatario)
+            var mensaje = new MailMessage(_configuration["Smtp:From"]!, destinatario)
             {
                 Subject = "Confirmá tu registro - Carnet Digital CUC",
-                Body = $@"
-                    <html><body>
+                Body = $@"<html><body>
                     <h2>¡Hola, {nombre}!</h2>
                     <p>Gracias por registrarte en el sistema de Carnet Digital del CUC.</p>
                     <p>Hacé clic en el siguiente enlace para confirmar tu cuenta:</p>
                     <p><a href=""{enlace}"">Confirmar mi cuenta</a></p>
                     <p><small>Este enlace vence en {minutos} minutos.</small></p>
-                    <p>Si no realizaste este registro, ignorá este mensaje.</p>
                     </body></html>",
                 IsBodyHtml = true
             };

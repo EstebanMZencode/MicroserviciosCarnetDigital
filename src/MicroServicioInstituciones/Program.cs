@@ -3,16 +3,14 @@ using MicroServicioInstituciones.Repository;
 using MicroServicioInstituciones.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
-using System.Text;
+using System.IdentityModel.Tokens.Jwt;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Repositorio y servicio
 builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<InstitucionRepository>();
 builder.Services.AddScoped<IInstitucionService, InstitucionService>();
 
-// JWT
 // JWT - temporal sin validación mientras se coordina con MicroServicioAuth
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -23,10 +21,10 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidateIssuer = false,
             ValidateAudience = false,
             ValidateLifetime = false,
-            SignatureValidator = (token, _) =>
-                new System.IdentityModel.Tokens.Jwt.JwtSecurityToken(token)
+            SignatureValidator = (token, _) => new JwtSecurityToken(token)
         };
     });
+
 builder.Services.AddAuthorization();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();

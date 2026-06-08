@@ -2,26 +2,19 @@
 
 public class Institucion
 {
-    public int Id { get; set; }
-    public string Nombre { get; set; } = string.Empty;
+    public Guid InstitucionID { get; set; }
+    public string NombreInstitucion { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Telefono { get; set; } = string.Empty;
-
-    // Los dominios vienen de la tabla DominiosInstituciones (relación 1:N)
+    public bool Estado { get; set; }
+    public DateTime FechaCreacion { get; set; }
+    public DateTime FechaModificacion { get; set; }
     public List<string> Dominios { get; set; } = new();
 }
 
-public class DominioInstitucion
-{
-    public int Id { get; set; }
-    public int InstitucionId { get; set; }
-    public string Dominio { get; set; } = string.Empty;
-}
-
-// DTO para crear/modificar
 public class InstitucionRequest
 {
-    public string Nombre { get; set; } = string.Empty;
+    public string NombreInstitucion { get; set; } = string.Empty;
     public string Email { get; set; } = string.Empty;
     public string Telefono { get; set; } = string.Empty;
     public List<string> Dominios { get; set; } = new();

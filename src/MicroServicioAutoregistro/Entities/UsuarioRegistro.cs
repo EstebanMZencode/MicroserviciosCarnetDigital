@@ -2,15 +2,16 @@
 
 public class UsuarioRegistro
 {
-    public string Email { get; set; } = string.Empty;
-    public int TipoIdentificacionId { get; set; }
+    public Guid TipoIdentID { get; set; }
     public string Identificacion { get; set; } = string.Empty;
     public string NombreCompleto { get; set; } = string.Empty;
-    public int InstitucionId { get; set; }
+    public string Email { get; set; } = string.Empty;
     public string Contrasena { get; set; } = string.Empty;
-    public int TipoUsuarioId { get; set; }
-    public List<int> CarrerasIds { get; set; } = new();
-    public List<int> AreasIds { get; set; } = new();
+    public Guid InstitucionID { get; set; }
+    public Guid TipoUsuarioID { get; set; }
+    public Guid RolID { get; set; }
+    public DateTime FechaVencimientoCarnet { get; set; }
+    public List<Guid> CarrerasIDs { get; set; } = new();
+    public List<Guid> AreasTrabajoIDs { get; set; } = new();
     public List<string> Telefonos { get; set; } = new();
-    public int RolId { get; set; }
 }
