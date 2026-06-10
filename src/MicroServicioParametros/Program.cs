@@ -26,6 +26,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<ParametroRepository>();
 builder.Services.AddScoped<IParametroService, ParametroService>();
+builder.Services.AddHttpClient<MicroServicioParametros.Security.TokenValidator>();
 
 var app = builder.Build();
 

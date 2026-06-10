@@ -1,6 +1,7 @@
 ﻿using System.Text.RegularExpressions;
 using MicroServicioPantallas.Entities;
 using MicroServicioPantallas.Services;
+using MicroServicioPantallas.Security;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MicroServicioPantallas
@@ -15,9 +16,14 @@ namespace MicroServicioPantallas
 
             group.MapGet("/", async (
                 [FromServices] IPantallaService service,
+                [FromServices] TokenValidator tokenValidator,
+                [FromHeader(Name = "token")] string? token,
                 int? pageNumber, int? pageSize, string? searchTerm,
                 string? sortColumn, string? sortDirection, bool? incluirEliminados) =>
             {
+                if (!await tokenValidator.EsValidoAsync(token))
+                    return Results.Unauthorized();
+
                 var (items, total) = await service.GetPaginadoAsync(
                     pageNumber ?? 1, pageSize ?? 10, searchTerm,
                     sortColumn ?? "",
@@ -28,15 +34,29 @@ namespace MicroServicioPantallas
             })
             .WithName("GetAllPantallas").WithOpenApi();
 
-            group.MapGet("/{id}", async ([FromServices] IPantallaService service, Guid id) =>
+            group.MapGet("/{id}", async (
+                [FromServices] IPantallaService service,
+                [FromServices] TokenValidator tokenValidator,
+                [FromHeader(Name = "token")] string? token,
+                Guid id) =>
             {
+                if (!await tokenValidator.EsValidoAsync(token))
+                    return Results.Unauthorized();
+
                 var p = await service.GetByIdAsync(id);
                 return p is null ? Results.NotFound() : Results.Ok(p);
             })
             .WithName("GetPantallaById").WithOpenApi();
 
-            group.MapPost("/", async ([FromServices] IPantallaService service, [FromBody] Pantalla pantalla) =>
+            group.MapPost("/", async (
+                [FromServices] IPantallaService service,
+                [FromServices] TokenValidator tokenValidator,
+                [FromHeader(Name = "token")] string? token,
+                [FromBody] Pantalla pantalla) =>
             {
+                if (!await tokenValidator.EsValidoAsync(token))
+                    return Results.Unauthorized();
+
                 var errores = Validar(pantalla);
                 if (errores.Count > 0) return Results.BadRequest(new { errores });
 
@@ -47,8 +67,16 @@ namespace MicroServicioPantallas
             })
             .WithName("CreatePantalla").WithOpenApi();
 
-            group.MapPut("/{id}", async ([FromServices] IPantallaService service, Guid id, [FromBody] Pantalla pantalla) =>
+            group.MapPut("/{id}", async (
+                [FromServices] IPantallaService service,
+                [FromServices] TokenValidator tokenValidator,
+                [FromHeader(Name = "token")] string? token,
+                Guid id,
+                [FromBody] Pantalla pantalla) =>
             {
+                if (!await tokenValidator.EsValidoAsync(token))
+                    return Results.Unauthorized();
+
                 var errores = Validar(pantalla);
                 if (errores.Count > 0) return Results.BadRequest(new { errores });
 
@@ -63,8 +91,15 @@ namespace MicroServicioPantallas
             })
             .WithName("UpdatePantalla").WithOpenApi();
 
-            group.MapDelete("/{id}", async ([FromServices] IPantallaService service, Guid id) =>
+            group.MapDelete("/{id}", async (
+                [FromServices] IPantallaService service,
+                [FromServices] TokenValidator tokenValidator,
+                [FromHeader(Name = "token")] string? token,
+                Guid id) =>
             {
+                if (!await tokenValidator.EsValidoAsync(token))
+                    return Results.Unauthorized();
+
                 var exists = await service.GetByIdAsync(id);
                 if (exists is null) return Results.NotFound();
 

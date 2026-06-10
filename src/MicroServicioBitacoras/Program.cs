@@ -26,6 +26,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<BitacoraRepository>();
 builder.Services.AddScoped<IBitacoraService, BitacoraService>();
+builder.Services.AddHttpClient<MicroServicioBitacoras.Security.TokenValidator>();
 
 var app = builder.Build();
 

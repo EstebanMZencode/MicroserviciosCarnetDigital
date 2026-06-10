@@ -19,6 +19,7 @@ builder.Services.AddCors(options =>
 builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<PantallaRepository>();
 builder.Services.AddScoped<IPantallaService, PantallaService>();
+builder.Services.AddHttpClient<MicroServicioPantallas.Security.TokenValidator>();
 
 var app = builder.Build();
 
