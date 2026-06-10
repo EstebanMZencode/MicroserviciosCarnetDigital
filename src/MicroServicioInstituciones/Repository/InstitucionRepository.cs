@@ -73,7 +73,7 @@ public class InstitucionRepository
             foreach (var dominio in request.Dominios)
             {
                 await connection.ExecuteAsync(
-                    @"INSERT INTO [Carnet_Core_User].[DominiosInstitucion]
+                    @"INSERT INTO [Carnet_Core_User].[DominiosInstituciones]
                         (DominioID, InstitucionID, NombreDominio)
                       VALUES 
                         (NEWID(), @InstitucionID, @NombreDominio)",
@@ -119,17 +119,20 @@ public class InstitucionRepository
                 return false;
             }
 
-            // Soft delete dominios anteriores y reinsertar
+            // Soft delete renombrando para evitar conflicto con UNIQUE constraint
             await connection.ExecuteAsync(
-                @"UPDATE [Carnet_Core_User].[DominiosInstitucion]
-                  SET Estado = 0, FechaModificacion = SYSUTCDATETIME()
-                  WHERE InstitucionID = @InstitucionID",
+                @"UPDATE [Carnet_Core_User].[DominiosInstituciones]
+                  SET Estado = 0,
+                      FechaModificacion = SYSUTCDATETIME(),
+                      NombreDominio = NombreDominio + '_DELETED_' + CAST(NEWID() AS VARCHAR(36))
+                  WHERE InstitucionID = @InstitucionID AND Estado = 1",
                 new { InstitucionID = id }, transaction);
 
+            // Insertar nuevos dominios
             foreach (var dominio in request.Dominios)
             {
                 await connection.ExecuteAsync(
-                    @"INSERT INTO [Carnet_Core_User].[DominiosInstitucion]
+                    @"INSERT INTO [Carnet_Core_User].[DominiosInstituciones]
                         (DominioID, InstitucionID, NombreDominio)
                       VALUES 
                         (NEWID(), @InstitucionID, @NombreDominio)",
@@ -154,11 +157,13 @@ public class InstitucionRepository
 
         try
         {
-            // Soft delete dominios
+            // Soft delete dominios renombrando para evitar conflictos futuros
             await connection.ExecuteAsync(
-                @"UPDATE [Carnet_Core_User].[DominiosInstitucion]
-                  SET Estado = 0, FechaModificacion = SYSUTCDATETIME()
-                  WHERE InstitucionID = @InstitucionID",
+                @"UPDATE [Carnet_Core_User].[DominiosInstituciones]
+                  SET Estado = 0,
+                      FechaModificacion = SYSUTCDATETIME(),
+                      NombreDominio = NombreDominio + '_DELETED_' + CAST(NEWID() AS VARCHAR(36))
+                  WHERE InstitucionID = @InstitucionID AND Estado = 1",
                 new { InstitucionID = id }, transaction);
 
             // Soft delete institución
@@ -183,7 +188,7 @@ public class InstitucionRepository
     {
         var dominios = await connection.QueryAsync<string>(
             @"SELECT NombreDominio 
-              FROM [Carnet_Core_User].[DominiosInstitucion]
+              FROM [Carnet_Core_User].[DominiosInstituciones]
               WHERE InstitucionID = @InstitucionID AND Estado = 1",
             new { InstitucionID = institucionId });
         return dominios;

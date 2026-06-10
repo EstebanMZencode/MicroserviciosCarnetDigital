@@ -7,7 +7,7 @@ public static class InstitucionEndpoints
 {
     public static void MapInstitucionEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/institucion").RequireAuthorization();
+        var group = app.MapGroup("/institucion");
 
         // GET /institucion
         group.MapGet("/", async (IInstitucionService service) =>
