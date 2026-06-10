@@ -8,6 +8,7 @@ builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<TipoIdentificacionRepository>();
 builder.Services.AddScoped<ITipoIdentificacionService, TipoIdentificacionService>();
 
+builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -23,6 +24,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UsePathBase("/MicroServicioTiposID");
 
 app.Use(async (context, next) =>
 {
@@ -71,14 +74,11 @@ app.Use(async (context, next) =>
     await next();
 });
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "TiposID API V1");
-    });
-}
+    c.SwaggerEndpoint("/MicroServicioTiposID/swagger/v1/swagger.json", "TiposID API V1");
+});
 
 app.UseCors("AllowAll");
 app.MapTipoIdentificacionEndpoints();

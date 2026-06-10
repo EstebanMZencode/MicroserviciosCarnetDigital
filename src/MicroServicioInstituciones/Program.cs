@@ -8,6 +8,7 @@ builder.Services.AddScoped<IDbConnectionFactory, DbConnectionFactory>();
 builder.Services.AddScoped<InstitucionRepository>();
 builder.Services.AddScoped<IInstitucionService, InstitucionService>();
 
+builder.Services.AddHttpClient();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -23,6 +24,8 @@ builder.Services.AddCors(options =>
 });
 
 var app = builder.Build();
+
+app.UsePathBase("/MicroServicioInstituciones");
 
 app.Use(async (context, next) =>
 {
@@ -71,14 +74,11 @@ app.Use(async (context, next) =>
     await next();
 });
 
-if (app.Environment.IsDevelopment())
+app.UseSwagger();
+app.UseSwaggerUI(c =>
 {
-    app.UseSwagger();
-    app.UseSwaggerUI(c =>
-    {
-        c.SwaggerEndpoint("/swagger/v1/swagger.json", "Instituciones API V1");
-    });
-}
+    c.SwaggerEndpoint("/MicroServicioInstituciones/swagger/v1/swagger.json", "Instituciones API V1");
+});
 
 app.UseCors("AllowAll");
 app.MapInstitucionEndpoints();
