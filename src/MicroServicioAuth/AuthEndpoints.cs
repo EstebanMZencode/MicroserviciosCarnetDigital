@@ -26,7 +26,7 @@ namespace MicroServicioAuth
                 .WithDescription("Renueva JWT y RefreshToken si el token de refresco sigue vigente.")
                 .WithOpenApi();
 
-            group.MapPost("/validate", MapValidate)
+            group.MapGet("/validate", MapValidate)
                 .WithName("Validate")
                 .WithDescription("Valida si un JWT es válido y no ha expirado.")
                 .WithOpenApi();
