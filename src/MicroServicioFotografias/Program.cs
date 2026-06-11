@@ -1,41 +1,41 @@
+using MicroServicioFotografias;
+using MicroServicioFotografias.Repository;
+using MicroServicioFotografias.Services;
+
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// La fotografía viaja en un header HTTP. Kestrel tiene un límite por defecto de 32 KB
+// para el total de headers. Se amplía a 4 MB para soportar imágenes Base64 de hasta 1 MB
+// (Base64 incrementa el tamaño ~33% respecto a los bytes originales).
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxRequestBufferSize = 4 * 1024 * 1024;
+    options.Limits.MaxRequestHeadersTotalSize = 4 * 1024 * 1024; // 4 MB
+    options.Limits.MaxRequestHeaderCount = 100;
+});
+
+// CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAll", policy =>
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader());
+});
+
+// HTTP Client para MicroServicioAuth (/validate) y MicroServicioBitacoras
+builder.Services.AddHttpClient();
+
+// Inyeccion de dependencias
+builder.Services.AddSingleton<IDbConnectionFactory, DbConnectionFactory>();
+builder.Services.AddScoped<FotografiasRepository>();
+builder.Services.AddScoped<IFotografiasService, FotografiasService>();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
-
+app.UseCors("AllowAll");
 app.UseHttpsRedirection();
 
-var summaries = new[]
-{
-    "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
-};
-
-app.MapGet("/weatherforecast", () =>
-{
-    var forecast =  Enumerable.Range(1, 5).Select(index =>
-        new WeatherForecast
-        (
-            DateOnly.FromDateTime(DateTime.Now.AddDays(index)),
-            Random.Shared.Next(-20, 55),
-            summaries[Random.Shared.Next(summaries.Length)]
-        ))
-        .ToArray();
-    return forecast;
-})
-.WithName("GetWeatherForecast");
+app.MapFotografiasEndpoints();
 
 app.Run();
-
-record WeatherForecast(DateOnly Date, int TemperatureC, string? Summary)
-{
-    public int TemperatureF => 32 + (int)(TemperatureC / 0.5556);
-}
