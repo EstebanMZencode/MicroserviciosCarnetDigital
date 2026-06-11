@@ -60,8 +60,8 @@ namespace MicroServicioAuth.Services
                 return (null, 401, "Usuario y/o contraseña incorrectos.");
 
             // Recuperar duraciones desde MicroServicioParametros (o usar valores por defecto)
-            var jwtMinutos = await GetParametroMinutosAsync("JWTTOKEN", token) ?? 5;  // Con token
-            var refreshMinutos = await GetParametroMinutosAsync("REFRESH", token) ?? (5 + jwtMinutos);
+            var jwtMinutos = await GetParametroMinutosAsync("JWTTOKEN") ?? 5;  // Con token
+            var refreshMinutos = await GetParametroMinutosAsync("REFRESH") ?? (5 + jwtMinutos);
 
             // Generar JWT y RefreshToken
             var jwtExpiracion = DateTime.UtcNow.AddMinutes(jwtMinutos);
@@ -116,8 +116,8 @@ namespace MicroServicioAuth.Services
                 return (null, 401, "No autorizado.");
 
             // Recuperar duraciones desde MicroServicioParametros (o usar valores por defecto)
-            var jwtMinutos = await GetParametroMinutosAsync("JWTTOKEN", token) ?? 5;  // Con token
-            var refreshMinutos = await GetParametroMinutosAsync("REFRESH", token) ?? (5 + jwtMinutos);
+            var jwtMinutos = await GetParametroMinutosAsync("JWTTOKEN") ?? 5;  // Con token
+            var refreshMinutos = await GetParametroMinutosAsync("REFRESH") ?? (5 + jwtMinutos);
 
             // Generar nuevos tokens
             var jwtExpiracion = DateTime.UtcNow.AddMinutes(jwtMinutos);
