@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MicroservicioTiposUsuario.Entities
 {
-    [Table("TiposUsuarios")]
+    [Table("TiposUsuarios", Schema = "Carnet_Identity_User")]
     public class TipoUsuario
     {
         [Key]
@@ -14,9 +14,11 @@ namespace MicroservicioTiposUsuario.Entities
         [StringLength(50)]
         public string NombreTipoUsuario { get; set; }
 
-        public DateTime FechaCreacion { get; set; } = DateTime.UtcNow;
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime FechaCreacion { get; set; }
 
-        public DateTime FechaModificacion { get; set; } = DateTime.UtcNow;
+        [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
+        public DateTime FechaModificacion { get; set; }
 
         public bool Estado { get; set; } = true;
     }
