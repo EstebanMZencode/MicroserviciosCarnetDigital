@@ -1,6 +1,35 @@
-@MicroServicioCarreras_HostAddress = http://localhost:5184
+@baseUrl = https://localhost:7232/api/carrera
 
-GET {{MicroServicioCarreras_HostAddress}}/weatherforecast/
-Accept: application/json
+### Obtener todas las carreras
+GET {{baseUrl}}/
 
-###
+### Obtener carrera por ID
+GET {{baseUrl}}/550e8400-e29b-41d4-a716-446655440000
+
+### Crear carrera
+POST {{baseUrl}}/
+Content-Type: application/json
+
+{
+  "nombreCarrera": "Ingeniería en Sistemas",
+  "directorCarrera": "Dr. Juan Pérez",
+  "email": "juan@cuc.ac.cr",
+  "telefono": "2551-2000",
+  "institucionID": "550e8400-e29b-41d4-a716-446655440001"
+}
+
+### Actualizar carrera
+PUT {{baseUrl}}/550e8400-e29b-41d4-a716-446655440000
+Content-Type: application/json
+
+{
+  "carreraID": "550e8400-e29b-41d4-a716-446655440000",
+  "nombreCarrera": "Ingeniería en Sistemas (ACTUALIZADA)",
+  "directorCarrera": "Dr. Juan Pérez López",
+  "email": "juan.nuevo@cuc.ac.cr",
+  "telefono": "2551-2000",
+  "institucionID": "550e8400-e29b-41d4-a716-446655440001"
+}
+
+### Eliminar carrera
+DELETE {{baseUrl}}/550e8400-e29b-41d4-a716-446655440000
