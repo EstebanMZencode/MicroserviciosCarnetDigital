@@ -23,7 +23,13 @@
             try
             {
                 var url = _configuration.GetValue<string>("Auth:ValidateUrl");
-                var request = new HttpRequestMessage(HttpMethod.Post, url);
+                var method = _configuration.GetValue<string>("Auth:HttpMethod") ?? "POST";
+
+                var httpMethod = method.Equals("GET", StringComparison.OrdinalIgnoreCase)
+                    ? HttpMethod.Get
+                    : HttpMethod.Post;
+
+                var request = new HttpRequestMessage(httpMethod, url);
                 request.Headers.Add("token", token);
 
                 var response = await _httpClient.SendAsync(request);
