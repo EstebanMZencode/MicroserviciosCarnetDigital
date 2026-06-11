@@ -1,4 +1,5 @@
-﻿using MicroServicioFotografias.Services;
+﻿using MicroServicioFotografias.Entities;
+using MicroServicioFotografias.Services;
 using Microsoft.AspNetCore.Mvc;
 
 namespace MicroServicioFotografias
@@ -17,8 +18,7 @@ namespace MicroServicioFotografias
         // ── PATCH /api/usuario/fotografia ─────────────────────────────────────
 
         private static async Task<IResult> MapActualizar(
-            [FromHeader(Name = "identificador")] string? identificador,
-            [FromHeader(Name = "fotografia")] string? fotografia,
+            [FromBody] ActualizarFotografiaRequest request,
             [FromHeader(Name = "Authorization")] string? authorization,
             IFotografiasService fotografiasService)
         {
@@ -29,17 +29,17 @@ namespace MicroServicioFotografias
             if (string.IsNullOrWhiteSpace(token))
                 return Results.Json(new { message = "El token es obligatorio." }, statusCode: 400);
 
-            if (string.IsNullOrWhiteSpace(identificador))
+            if (string.IsNullOrWhiteSpace(request?.Identificador))
                 return Results.Json(new { message = "El identificador del usuario es obligatorio." }, statusCode: 400);
 
-            if (!identificador.Contains('@'))
+            if (!request.Identificador.Contains('@'))
                 return Results.Json(new { message = "El identificador del usuario no es válido, debe ser un email." }, statusCode: 400);
 
-            if (string.IsNullOrWhiteSpace(fotografia))
+            if (string.IsNullOrWhiteSpace(request?.Fotografia))
                 return Results.Json(new { message = "La fotografía del usuario es obligatoria." }, statusCode: 400);
 
             var (statusCode, error) = await fotografiasService.ActualizarFotografiaAsync(
-                identificador, fotografia, token);
+                request.Identificador, request.Fotografia, token);
 
             return statusCode == 204
                 ? Results.NoContent()

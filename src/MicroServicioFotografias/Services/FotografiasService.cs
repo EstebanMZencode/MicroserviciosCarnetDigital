@@ -165,7 +165,7 @@ namespace MicroServicioFotografias.Services
 
             var respuesta = new FotografiaResponse
             {
-                //Email = email,
+                Email = email,
                 FotoBase64 = usuario.FotoBase64
             };
 
