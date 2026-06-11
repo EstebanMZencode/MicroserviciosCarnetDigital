@@ -3,7 +3,6 @@ using MicroservicioTiposUsuario.Entities;
 using MicroservicioTiposUsuario.Repository;
 using MicroservicioTiposUsuario.Services;
 using Microsoft.EntityFrameworkCore;
-using System.Net.Http;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,7 +31,6 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-
 app.Use(async (context, next) =>
 {
     if (context.Request.Path.StartsWithSegments("/swagger") ||
@@ -56,7 +54,10 @@ app.Use(async (context, next) =>
         return;
     }
 
-    using var httpClient = new HttpClient();
+    // ✅ Handler con SSL para certificados auto-firmados
+    var handler = new HttpClientHandler();
+    handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
+    using var httpClient = new HttpClient(handler);
     httpClient.Timeout = TimeSpan.FromSeconds(10);
 
     try
@@ -96,6 +97,6 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseCors("AllowAll");
-app.MapTipoUsuarioEndpoints();  
+app.MapTipoUsuarioEndpoints();
 
 app.Run();
