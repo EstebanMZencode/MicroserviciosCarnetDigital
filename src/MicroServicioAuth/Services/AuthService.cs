@@ -60,8 +60,8 @@ namespace MicroServicioAuth.Services
                 return (null, 401, "Usuario y/o contraseña incorrectos.");
 
             // Recuperar duraciones desde MicroServicioParametros (o usar valores por defecto)
-            var jwtMinutos = await GetParametroMinutosAsync("JWT_TOKEN") ?? 5;
-            var refreshMinutos = await GetParametroMinutosAsync("REFRESH") ?? (5 + jwtMinutos);
+            var jwtMinutos = await GetParametroMinutosAsync("JWTTOKEN", token) ?? 5;  // Con token
+            var refreshMinutos = await GetParametroMinutosAsync("REFRESH", token) ?? (5 + jwtMinutos);
 
             // Generar JWT y RefreshToken
             var jwtExpiracion = DateTime.UtcNow.AddMinutes(jwtMinutos);
@@ -116,8 +116,8 @@ namespace MicroServicioAuth.Services
                 return (null, 401, "No autorizado.");
 
             // Recuperar duraciones desde MicroServicioParametros (o usar valores por defecto)
-            var jwtMinutos = await GetParametroMinutosAsync("JWTTOKEN") ?? 5;
-            var refreshMinutos = await GetParametroMinutosAsync("REFRESH") ?? (5 + jwtMinutos);
+            var jwtMinutos = await GetParametroMinutosAsync("JWTTOKEN", token) ?? 5;  // Con token
+            var refreshMinutos = await GetParametroMinutosAsync("REFRESH", token) ?? (5 + jwtMinutos);
 
             // Generar nuevos tokens
             var jwtExpiracion = DateTime.UtcNow.AddMinutes(jwtMinutos);
@@ -223,20 +223,37 @@ namespace MicroServicioAuth.Services
         /// Retorna <c>null</c> si el servicio no responde o el valor no es un entero válido.
         /// </summary>
         /// <param name="identificador">Clave del parámetro: "JWT_TOKEN" o "REFRESH".</param>
-        private async Task<int?> GetParametroMinutosAsync(string identificador)
+        private async Task<int?> GetParametroMinutosAsync(string identificador, string token = "")
         {
             try
             {
                 var baseUrl = _configuration["MicroServicios:ParametrosBaseUrl"];
                 var client = _httpClientFactory.CreateClient();
 
-                var response = await client.GetAsync($"{baseUrl}/parametro/{identificador}");
+                var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/parametro/{identificador}");
+
+                // Enviar el token en el header "token" si está disponible
+                if (!string.IsNullOrWhiteSpace(token))
+                    request.Headers.Add("token", token);
+
+                var response = await client.SendAsync(request);
 
                 if (!response.IsSuccessStatusCode)
                     return null;
 
                 var json = await response.Content.ReadAsStringAsync();
-                var parametro = JsonSerializer.Deserialize<ParametroValor>(json,
+
+                // La respuesta tiene estructura: { "valor": { "identificador": "...", "valor": "5" } }
+                using var doc = JsonDocument.Parse(json);
+                var root = doc.RootElement;
+
+                // Buscar la llave "valor" en el root
+                if (!root.TryGetProperty("valor", out var valorElement))
+                    return null;
+
+                // Deserializar el contenido de "valor" a ParametroValor
+                var parametro = JsonSerializer.Deserialize<ParametroValor>(
+                    valorElement.GetRawText(),
                     new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
 
                 return (parametro is not null && int.TryParse(parametro.Valor, out var minutos))
@@ -259,7 +276,7 @@ namespace MicroServicioAuth.Services
         /// <param name="jwtToken">JWT generado en este request, enviado como Bearer token.</param>
         /// <param name="email">Email del usuario que ejecutó la acción.</param>
         /// <param name="descripcion">Descripción legible de la acción realizada.</param>
-        private async Task RegistrarBitacoraAsync(string jwtToken, string email, string descripcion)
+        private async Task RegistrarBitacoraAsync(string token, string email, string descripcion)
         {
             try
             {
@@ -277,8 +294,8 @@ namespace MicroServicioAuth.Services
                     Content = new StringContent(body, Encoding.UTF8, "application/json")
                 };
 
-                request.Headers.Authorization =
-                    new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", jwtToken);
+                // El token va en el header "token", no en Authorization Bearer
+                request.Headers.Add("token", token);
 
                 await client.SendAsync(request);
             }
