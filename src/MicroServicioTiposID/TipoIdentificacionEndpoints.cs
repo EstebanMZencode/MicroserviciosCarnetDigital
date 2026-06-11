@@ -7,7 +7,7 @@ public static class TipoIdentificacionEndpoints
 {
     public static void MapTipoIdentificacionEndpoints(this WebApplication app)
     {
-        var group = app.MapGroup("/institucion");
+        var group = app.MapGroup("/tiposidentificacion");
 
         // GET /tiposidentificacion
         group.MapGet("/", async (ITipoIdentificacionService service) =>
