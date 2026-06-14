@@ -54,6 +54,7 @@ app.Use(async (context, next) =>
         return;
     }
 
+    // ✅ Handler con SSL para certificados auto-firmados
     var handler = new HttpClientHandler();
     handler.ServerCertificateCustomValidationCallback = (message, cert, chain, errors) => true;
     using var httpClient = new HttpClient(handler);
