@@ -89,8 +89,8 @@ namespace MicroservicioAreas
         {
             try
             {
-                var resultado = await service.Eliminar(id);
-                return Results.Ok(new { mensaje = "Área eliminada correctamente", resultado });
+                var areaEliminada = await service.Eliminar(id);
+                return Results.Ok(new { mensaje = "Área eliminada correctamente", data = areaEliminada });
             }
             catch (Exception ex)
             {

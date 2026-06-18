@@ -1,6 +1,6 @@
 ﻿using MicroservicioCarreras.Entities;
 
-namespace MicroservicioCarreras.Repository
+namespace MicroServicioCarreras.Repository
 {
     public interface ICarreraRepository
     {
@@ -8,6 +8,6 @@ namespace MicroservicioCarreras.Repository
         Task<Carrera> ObtenerPorId(Guid id);
         Task<Carrera> Crear(Carrera carrera);
         Task<Carrera> Actualizar(Carrera carrera);
-        Task<bool> Eliminar(Guid id);
+        Task<Carrera> Eliminar(Guid id);
     }
 }

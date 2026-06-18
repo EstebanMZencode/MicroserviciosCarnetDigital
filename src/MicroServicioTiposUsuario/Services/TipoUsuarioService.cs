@@ -19,12 +19,22 @@ namespace MicroservicioTiposUsuario.Services
             => await _repository.ObtenerPorId(id);
 
         public async Task<TipoUsuario> Crear(TipoUsuario tipoUsuario)
-            => await _repository.Crear(tipoUsuario);
+        {
+            if (string.IsNullOrWhiteSpace(tipoUsuario.NombreTipoUsuario))
+                throw new Exception("El nombre del tipo de usuario es requerido");
+
+            return await _repository.Crear(tipoUsuario);
+        }
 
         public async Task<TipoUsuario> Actualizar(TipoUsuario tipoUsuario)
-            => await _repository.Actualizar(tipoUsuario);
+        {
+            if (string.IsNullOrWhiteSpace(tipoUsuario.NombreTipoUsuario))
+                throw new Exception("El nombre del tipo de usuario es requerido");
 
-        public async Task<bool> Eliminar(Guid id)
+            return await _repository.Actualizar(tipoUsuario);
+        }
+
+        public async Task<TipoUsuario> Eliminar(Guid id)
             => await _repository.Eliminar(id);
     }
 }

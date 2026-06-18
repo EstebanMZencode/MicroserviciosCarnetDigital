@@ -1,4 +1,5 @@
 ﻿using MicroservicioCarreras.Entities;
+using MicroServicioCarreras.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace MicroservicioCarreras.Repository
@@ -58,7 +59,7 @@ namespace MicroservicioCarreras.Repository
             return actualizada;
         }
 
-        public async Task<bool> Eliminar(Guid id)
+        public async Task<Carrera> Eliminar(Guid id)
         {
             var carrera = await _context.Carreras.FirstOrDefaultAsync(c => c.CarreraID == id);
             if (carrera == null) throw new Exception("Carrera no encontrada");
@@ -69,7 +70,8 @@ namespace MicroservicioCarreras.Repository
                    WHERE [CarreraID] = {id}"
             );
 
-            return true;
+            var eliminada = await _context.Carreras.FirstOrDefaultAsync(c => c.CarreraID == id);
+            return eliminada;
         }
     }
 }

@@ -89,8 +89,8 @@ namespace MicroservicioTiposUsuario
         {
             try
             {
-                var resultado = await service.Eliminar(id);
-                return Results.Ok(new { mensaje = "Tipo de usuario eliminado correctamente", resultado });
+                var tipoUsuarioEliminado = await service.Eliminar(id);
+                return Results.Ok(new { mensaje = "Tipo de usuario eliminado correctamente", data = tipoUsuarioEliminado });
             }
             catch (Exception ex)
             {

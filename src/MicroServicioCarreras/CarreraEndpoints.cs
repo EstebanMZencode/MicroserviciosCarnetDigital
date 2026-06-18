@@ -89,8 +89,8 @@ namespace MicroservicioCarreras
         {
             try
             {
-                var resultado = await service.Eliminar(id);
-                return Results.Ok(new { mensaje = "Carrera eliminada correctamente", resultado });
+                var carreraEliminada = await service.Eliminar(id);
+                return Results.Ok(new { mensaje = "Carrera eliminada correctamente", data = carreraEliminada });
             }
             catch (Exception ex)
             {

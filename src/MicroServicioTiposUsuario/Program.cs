@@ -1,7 +1,7 @@
 using MicroservicioTiposUsuario;
-using MicroservicioTiposUsuario.Entities;
 using MicroservicioTiposUsuario.Repository;
 using MicroservicioTiposUsuario.Services;
+using MicroServicioTiposUsuario.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

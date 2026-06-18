@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MicroservicioCarreras.Entities;
+using Microsoft.EntityFrameworkCore;
 
-namespace MicroservicioCarreras.Entities
+namespace MicroServicioCarreras.Repository
 {
     public class CarreraDbContext : DbContext
     {
