@@ -1,5 +1,4 @@
 ﻿using Dapper;
-using MicroServicioAuth.Entities;
 
 namespace MicroServicioAuth.Repository
 {
