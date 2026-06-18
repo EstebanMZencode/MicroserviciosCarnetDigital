@@ -1,7 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 18
+<<<<<<< HEAD
 VisualStudioVersion = 18.7.11925.98
+=======
+VisualStudioVersion = 18.7.11911.148
+>>>>>>> dc705d4 (MicroServicioEstadoUsuario Completo)
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{827E0CD3-B72D-47B6-A68D-7590B98EB39B}"
 EndProject
@@ -27,7 +31,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroServicioUsuarios", "sr
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroServicioAutoregistro", "src\MicroServicioAutoregistro\MicroServicioAutoregistro.csproj", "{FEA5BAA4-8735-407B-8868-9AB80DC09F0A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroServicioActualizarEstado", "src\MicroServicioActualizarEstado\MicroServicioActualizarEstado.csproj", "{0123D5C6-1CF4-46D3-A48F-36C10AC56F88}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroServicioEstadoUsuario", "src\MicroServicioActualizarEstado\MicroServicioEstadoUsuario.csproj", "{0123D5C6-1CF4-46D3-A48F-36C10AC56F88}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MicroServicioFotografias", "src\MicroServicioFotografias\MicroServicioFotografias.csproj", "{14DDA9A0-BC2B-45B8-8093-71367ADDC94B}"
 EndProject
@@ -263,5 +267,8 @@ Global
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {1A17277C-AD08-4706-B5D1-959E891186CD}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {973A5F59-7764-4F17-904D-FCF29540939B}
 	EndGlobalSection
 EndGlobal

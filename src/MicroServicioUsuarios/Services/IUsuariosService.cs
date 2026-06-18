@@ -1,6 +1,4 @@
-﻿using MicroServicioAuth.Entities;
-
-namespace MicroServicioAuth.Services
+﻿namespace MicroServicioAuth.Services
 {
     public interface IUsuariosService
     {
