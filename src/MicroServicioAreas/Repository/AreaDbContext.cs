@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MicroservicioAreas.Entities;
+using Microsoft.EntityFrameworkCore;
 
-namespace MicroservicioAreas.Entities
+namespace MicroServicioAreas.Repository
 {
     public class AreaDbContext : DbContext
     {

@@ -1,7 +1,7 @@
 using MicroservicioAreas;
-using MicroservicioAreas.Entities;
 using MicroservicioAreas.Repository;
 using MicroservicioAreas.Services;
+using MicroServicioAreas.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

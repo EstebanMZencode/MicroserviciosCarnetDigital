@@ -1,7 +1,7 @@
 using MicroservicioCarreras;
-using MicroservicioCarreras.Entities;
 using MicroservicioCarreras.Repository;
 using MicroservicioCarreras.Services;
+using MicroServicioCarreras.Repository;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

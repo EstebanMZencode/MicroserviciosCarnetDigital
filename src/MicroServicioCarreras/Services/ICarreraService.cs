@@ -8,6 +8,6 @@ namespace MicroservicioCarreras.Services
         Task<Carrera> ObtenerPorId(Guid id);
         Task<Carrera> Crear(Carrera carrera);
         Task<Carrera> Actualizar(Carrera carrera);
-        Task<bool> Eliminar(Guid id);
+        Task<Carrera> Eliminar(Guid id);
     }
 }

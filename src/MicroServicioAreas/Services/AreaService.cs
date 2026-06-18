@@ -1,5 +1,6 @@
 ﻿using MicroservicioAreas.Entities;
 using MicroservicioAreas.Repository;
+using MicroServicioAreas.Repository;
 
 namespace MicroservicioAreas.Services
 {
@@ -24,7 +25,7 @@ namespace MicroservicioAreas.Services
         public async Task<Area> Actualizar(Area area)
             => await _repository.Actualizar(area);
 
-        public async Task<bool> Eliminar(Guid id)
+        public async Task<Area> Eliminar(Guid id)
             => await _repository.Eliminar(id);
     }
 }

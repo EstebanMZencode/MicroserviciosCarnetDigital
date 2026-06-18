@@ -1,4 +1,5 @@
 ﻿using MicroservicioAreas.Entities;
+using MicroServicioAreas.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace MicroservicioAreas.Repository
@@ -55,7 +56,7 @@ namespace MicroservicioAreas.Repository
             return actualizada;
         }
 
-        public async Task<bool> Eliminar(Guid id)
+        public async Task<Area> Eliminar(Guid id)
         {
             var area = await _context.Areas.FirstOrDefaultAsync(a => a.AreaTrabID == id);
             if (area == null) throw new Exception("Área no encontrada");
@@ -66,7 +67,8 @@ namespace MicroservicioAreas.Repository
                    WHERE [AreaTrabID] = {id}"
             );
 
-            return true;
+            var eliminada = await _context.Areas.FirstOrDefaultAsync(a => a.AreaTrabID == id);
+            return eliminada;
         }
     }
 }

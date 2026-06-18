@@ -1,6 +1,7 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MicroservicioTiposUsuario.Entities;
+using Microsoft.EntityFrameworkCore;
 
-namespace MicroservicioTiposUsuario.Entities
+namespace MicroServicioTiposUsuario.Repository
 {
     public class TipoUsuarioDbContext : DbContext
     {

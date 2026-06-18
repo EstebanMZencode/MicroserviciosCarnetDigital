@@ -8,6 +8,6 @@ namespace MicroservicioAreas.Services
         Task<Area> ObtenerPorId(Guid id);
         Task<Area> Crear(Area area);
         Task<Area> Actualizar(Area area);
-        Task<bool> Eliminar(Guid id);
+        Task<Area> Eliminar(Guid id);
     }
 }

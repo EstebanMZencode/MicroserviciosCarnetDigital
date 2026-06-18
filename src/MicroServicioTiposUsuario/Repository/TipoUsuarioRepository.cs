@@ -1,4 +1,5 @@
 ﻿using MicroservicioTiposUsuario.Entities;
+using MicroServicioTiposUsuario.Repository;
 using Microsoft.EntityFrameworkCore;
 
 namespace MicroservicioTiposUsuario.Repository
@@ -54,7 +55,7 @@ namespace MicroservicioTiposUsuario.Repository
             return actualizado;
         }
 
-        public async Task<bool> Eliminar(Guid id)
+        public async Task<TipoUsuario> Eliminar(Guid id)
         {
             var tipoUsuario = await _context.TiposUsuarios.FirstOrDefaultAsync(t => t.TipoUsuarioID == id);
             if (tipoUsuario == null) throw new Exception("Tipo de usuario no encontrado");
@@ -65,7 +66,8 @@ namespace MicroservicioTiposUsuario.Repository
                    WHERE [TipoUsuarioID] = {id}"
             );
 
-            return true;
+            var eliminado = await _context.TiposUsuarios.FirstOrDefaultAsync(t => t.TipoUsuarioID == id);
+            return eliminado;
         }
     }
 }
