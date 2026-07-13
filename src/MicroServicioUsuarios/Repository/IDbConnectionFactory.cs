@@ -1,6 +1,6 @@
 ﻿using System.Data;
 
-namespace MicroServicioAuth.Repository
+namespace MicroServicioUsuarios.Repository
 {
     public interface IDbConnectionFactory
     {

@@ -33,7 +33,7 @@ if (app.Environment.IsDevelopment() || app.Environment.IsStaging() || app.Enviro
     app.UseSwagger();
     app.UseSwaggerUI(options =>
     {
-        options.SwaggerEndpoint("/swagger/v1/swagger.json", "MicroServicioActualizarEstadoUsuario v1");
+        options.SwaggerEndpoint("/swagger/v1/swagger.json", "MicroServicioEstadoUsuario v1");
         options.RoutePrefix = "swagger";
     });
 }

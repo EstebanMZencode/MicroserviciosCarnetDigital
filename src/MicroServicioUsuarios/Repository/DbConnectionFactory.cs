@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Data;
 
-namespace MicroServicioAuth.Repository
+namespace MicroServicioUsuarios.Repository
 {
     public class DbConnectionFactory : IDbConnectionFactory
     {
@@ -9,12 +9,12 @@ namespace MicroServicioAuth.Repository
 
         public DbConnectionFactory(IConfiguration configuration)
         {
-            _configuration = configuration;
+            this._configuration = configuration;
         }
 
         public IDbConnection CreateConnection()
         {
-            return new SqlConnection(_configuration.GetConnectionString("DefaultConnection"));
+            return new SqlConnection(this._configuration.GetConnectionString("DefaultConnection"));
         }
     }
 }
