@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioRoles
 {
-    public class Roles
+    public class RolesApiClient : IRolesApiClient
     {
     }
 }

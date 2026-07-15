@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioCarreras
 {
-    public class Carreras
+    public class ICarrerasApiClient
     {
     }
 }

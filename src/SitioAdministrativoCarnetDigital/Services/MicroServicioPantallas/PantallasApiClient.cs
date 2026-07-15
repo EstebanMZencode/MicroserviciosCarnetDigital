@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioPantallas
 {
-    public class IPantallas
+    public class PantallasApiClient : IPantallasApiClient
     {
     }
 }

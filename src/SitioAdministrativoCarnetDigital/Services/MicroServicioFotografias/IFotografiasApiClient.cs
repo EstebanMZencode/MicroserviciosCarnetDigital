@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioFotografias
 {
-    public class IFotografias
+    public class IFotografiasApiClient
     {
     }
 }

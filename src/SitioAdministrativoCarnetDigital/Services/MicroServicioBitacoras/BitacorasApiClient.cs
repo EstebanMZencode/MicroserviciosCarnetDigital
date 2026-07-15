@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioBitacoras
 {
-    public class Bitacoras
+    public class BitacorasApiClient : IBitacorasApiClient
     {
     }
 }
