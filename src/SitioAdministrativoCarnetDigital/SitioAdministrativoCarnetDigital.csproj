@@ -6,17 +6,4 @@
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
-  <ItemGroup>
-    <Folder Include="Pages\ModuloBitacoras\" />
-    <Folder Include="Pages\ModuloAreasTrabajo\" />
-    <Folder Include="Pages\ModuloCarreras\" />
-    <Folder Include="Pages\ModuloInstituciones\" />
-    <Folder Include="Pages\ModuloRoles\" />
-    <Folder Include="Pages\ModuloUsuario\" />
-    <Folder Include="Pages\ModuloUsuarios\" />
-    <Folder Include="Pages\ModuloTiposIdentificacion\" />
-    <Folder Include="Pages\ModuloPantallas\" />
-    <Folder Include="Pages\ModuloParametros\" />
-  </ItemGroup>
-
 </Project>

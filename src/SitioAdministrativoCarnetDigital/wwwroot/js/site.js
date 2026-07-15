@@ -6,9 +6,12 @@
 document.getElementById('sidebarToggle')?.addEventListener('click', function () {
 
     // En desktop usa la clase en body
-    if (window.innerWidth > 768) {
+    if (window.innerWidth > 768)
+    {
         document.body.classList.toggle('sidebar-collapsed');
-    } else {
+    }
+    else
+    {
         // En móvil usa la clase .open en la sidebar directamente
         document.querySelector('.sidebar').classList.toggle('open');
     }
