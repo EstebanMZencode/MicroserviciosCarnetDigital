@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioQRs
 {
-    public class QRs
+    public class IQRsApiClient
     {
     }
 }

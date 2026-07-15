@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioParametros
 {
-    public class Parametros
+    public class IParametrosApiClient
     {
     }
 }

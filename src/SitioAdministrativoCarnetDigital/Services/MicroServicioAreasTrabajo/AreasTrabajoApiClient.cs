@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioAreasTrabajo
 {
-    public class AreasTrabajo
+    public class AreasTrabajoApiClient : IAreasTrabajoApiClient
     {
     }
 }

@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioAutoregistro
 {
-    public class Autoregistro
+    public class AutoregistroApiClient : IAutoregistroApiClient
     {
     }
 }

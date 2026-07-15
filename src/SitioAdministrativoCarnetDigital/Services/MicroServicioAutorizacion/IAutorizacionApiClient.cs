@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioAutorizacion
 {
-    public class Autorizacion
+    public class IAutorizacionApiClient
     {
     }
 }

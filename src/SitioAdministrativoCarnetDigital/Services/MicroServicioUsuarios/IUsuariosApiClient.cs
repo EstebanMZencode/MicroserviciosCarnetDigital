@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioUsuarios
 {
-    public class Usuarios
+    public class IUsuariosApiClient
     {
     }
 }

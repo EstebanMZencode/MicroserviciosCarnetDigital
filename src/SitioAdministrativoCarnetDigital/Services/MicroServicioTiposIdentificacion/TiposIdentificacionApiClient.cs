@@ -1,6 +1,6 @@
 ﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposIdentificacion
 {
-    public class ITiposIdentificacion
+    public class TiposIdentificacionApiClient : ITiposIdentificacionApiClient
     {
     }
 }
