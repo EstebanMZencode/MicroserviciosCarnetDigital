@@ -5,6 +5,6 @@ namespace MicroServicioUsuarios.Services.ExternalServices
 {
     public interface ITipoIdentificacionE_Service
     {
-        public Task<(TipoIdentificacionResponse, string[] error)> ValidarTipoIdentificacionAsync(string tipoIdentificacionID, string token);
+        public Task<(int statusCode, ServicesStatus.ServiceStatus, string message, string[] errors)> ValidarTipoIdentificacionAsync(string tipoIdentificacionID, string token);
     }
 }

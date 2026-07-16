@@ -7,24 +7,19 @@ namespace MicroServicioUsuarios.Services.ExternalServices
     {
         private readonly IConfiguration _configuration;
         private readonly IHttpClientFactory _httpClientFactory;
-        public enum TipoIdentificacionResponse
-        {
-            Success,             // Existe y estado true
-            Inactive,            // Existe pero estado false
-            NotFound,            // No existe
-            ServiceUnavailable,  // Error de conexión
-            Unauthorized         // No Autorizado
-        }
+        private readonly ServicesStatus _serviceStatus;
 
         public TipoIdentificacionE_Service(
             IConfiguration configuration,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ServicesStatus serviceStatus)
         {
             _configuration = configuration;
             _httpClientFactory = httpClientFactory;
+            _serviceStatus = serviceStatus;
         }
 
-        public async Task<(TipoIdentificacionResponse, string[] error)> ValidarTipoIdentificacionAsync(string tipoIdentificacionID, string token)
+        public async Task<(int statusCode, ServicesStatus.ServiceStatus, string message, string[] errors)> ValidarTipoIdentificacionAsync(string tipoIdentificacionID, string token)
         {
             try
             {
@@ -40,18 +35,17 @@ namespace MicroServicioUsuarios.Services.ExternalServices
                 {
                     if (response.StatusCode == System.Net.HttpStatusCode.Unauthorized)
                     {
-                        return (TipoIdentificacionResponse.Unauthorized, 
+                        return (401, _serviceStatus.Unauthorized, "Unauthorized",
                             new[] { "El servicio de tipos de identificación no autorizó la conexión." });
                     }
 
                     if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
-                        return (TipoIdentificacionResponse.NotFound, 
+                        return (404, _serviceStatus.NotFound, "Not Found",
                             new[] { "Tipo de identificación no encontrada." });
                     }
                     
-
-                    return (TipoIdentificacionResponse.ServiceUnavailable, 
+                    return (503, _serviceStatus.ServiceUnavailable, "Service Unavailable",
                         new[] { "Servicio de tipos de identificación no disponible. Intente más tarde." });
                 }
 
@@ -62,24 +56,24 @@ namespace MicroServicioUsuarios.Services.ExternalServices
                 // Lee estado del json. Si no existe o es false, devuelve false.
                 if (!document.RootElement.TryGetProperty("estado", out var estadoProp))
                 {
-                    return (TipoIdentificacionResponse.ServiceUnavailable,
+                    return (503, _serviceStatus.ServiceUnavailable, "Service Unavailable",
                         new[] { "Respuesta inválida del servicio de tipos de identificación." });
                 }
 
                 if (estadoProp.GetBoolean())
                 {
-                    return (TipoIdentificacionResponse.Success, Array.Empty<string>());
+                    return (201, _serviceStatus.Success, string.Empty, Array.Empty<string>());
                 }
                 else
                 {
-                    return (TipoIdentificacionResponse.Inactive,
+                    return (400, _serviceStatus.Inactive, "Inactive",
                         new[] { "Tipo de identificación inactivo." });
                 }
 
             }
-            catch
+            catch 
             {
-                return (TipoIdentificacionResponse.ServiceUnavailable, 
+                return (503, _serviceStatus.ServiceUnavailable, "Service Unavailable",
                     new[] { "Servicio de tipos de identificación no disponible. Intente más tarde" });
             }
             

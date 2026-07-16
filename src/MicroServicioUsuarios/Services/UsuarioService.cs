@@ -1,6 +1,7 @@
 ﻿using FluentValidation;
 using MicroServicioUsuarios.Entities;
 using MicroServicioUsuarios.Repository;
+using static MicroServicioUsuarios.Services.ExternalServices.ServicesStatus;
 
 namespace MicroServicioUsuarios.Services
 {
@@ -58,56 +59,36 @@ namespace MicroServicioUsuarios.Services
 
             }
 
-            //Validaciones de microservicios externos
-            var (tipoIdentificacionResult, tipoIdentificaccionError) = await _tipoIdentificacionE_Service
-                .ValidarTipoIdentificacionAsync(usuario.TipoIdentificacion, token);
-
-            if (tipoIdentificacionResult != ExternalServices.TipoIdentificacionE_Service.TipoIdentificacionResponse.Success)
+            try
             {
-                return tipoIdentificacionResult switch
+                // Validaciones de microservicios externos 
+                var (tipoIdentStatusCode,
+                    tipoIdentStatus,
+                    tipoIdentMessage,
+                    tipoIdentError) = await _tipoIdentificacionE_Service
+                    .ValidarTipoIdentificacionAsync(usuario.TipoIdentificacion, token);
+
+                if (tipoIdentStatus != ServiceStatus.Success)
                 {
-                    // No Autorizado
-                    ExternalServices.TipoIdentificacionE_Service.TipoIdentificacionResponse.Unauthorized => Results.Json(new
+                    return Results.Json(new
                     {
-                        StatusCode = 401,
-                        Message = "Unauthorized",
-                        Errors = tipoIdentificaccionError
-                    }, statusCode: 401),
+                        StatusCode = tipoIdentStatusCode,
+                        Message = tipoIdentMessage,
+                        Errors = tipoIdentError
+                    }, statusCode: tipoIdentStatusCode);
+                }
 
-                    // Inactivo 
-                    ExternalServices.TipoIdentificacionE_Service.TipoIdentificacionResponse.Inactive => Results.Json(new
-                    {
-                        StatusCode = 400,
-                        Message = "Bad Request",
-                        Errors = tipoIdentificaccionError
-                    }, statusCode: 400),
-
-                    // No encontrado
-                    ExternalServices.TipoIdentificacionE_Service.TipoIdentificacionResponse.NotFound => Results.Json(new
-                    {
-                        StatusCode = 404,
-                        Message = "Not Found",
-                        Errors = tipoIdentificaccionError
-                    }, statusCode: 404),
-
-                    // Error de Conexión
-                    ExternalServices.TipoIdentificacionE_Service.TipoIdentificacionResponse.ServiceUnavailable => Results.Json(new
-                    {
-                        StatusCode = 503,
-                        Message = "Service Unavailable",
-                        Errors = tipoIdentificaccionError
-                    }, statusCode: 503),
-
-
-
-                    _ => Results.Json(new
-                    {
-                        StatusCode = 500,
-                        Message = "Internal Server Error",
-                        Errors = tipoIdentificaccionError
-                    }, statusCode: 500)
-                };
             }
+            catch (Exception ex)
+            {
+                // Error no controlado 
+                return Results.Json(new
+                {
+                    StatusCode = 500,
+                    Message = "Internal Server Error",
+                }, statusCode: 500);
+            }
+
 
             // Aquí iría la lógica para crear un usuario en la base de datos
             // * Devuelve el objeto que irá en data y * //
@@ -120,6 +101,7 @@ namespace MicroServicioUsuarios.Services
                 Data = usuario // Cambiar a response
             }, statusCode: 201);
         }
+
     }
 }
 
