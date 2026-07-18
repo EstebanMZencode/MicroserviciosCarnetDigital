@@ -13,7 +13,7 @@ namespace MicroServicioUsuarios.Services.ExternalServices
             _httpClientFactory = httpClientFactory;
         }
 
-        public async Task<bool> ValidarTokenAsync(string token)
+        public async Task<MicroServicesResponse> ValidarTokenAsync(string token)
         {
             try
             {
@@ -26,12 +26,31 @@ namespace MicroServicioUsuarios.Services.ExternalServices
                 var response = await client.GetAsync(url);
 
                 // Si la respuesta es exitosa y el contenido es "true", entonces el token es válido
-                return response.IsSuccessStatusCode && 
-                    (await response.Content.ReadAsStringAsync()).Trim() == "\"true\"";
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+
+                    if (content.Trim().Trim('"').ToLowerInvariant() == "true")
+                    {
+                        return MicroServicesResponse.Success();
+                    }
+                }
+
+                // Cualquier otro caso, Unauthorized 
+                return MicroServicesResponse.Unauthorized(
+                    errors: new Dictionary<string, string[]>
+                    {
+                        { "Authorization", new[] { "Token inválido o expirado." } }
+                    });
+
             }
             catch (Exception)
             {
-                return false;
+                return MicroServicesResponse.ServiceUnavailable(
+                    errors: new Dictionary<string, string[]>
+                    {
+                        { "Authorización", new[] { "Servicio de autorización no disponible. Intente más tarde." } }
+                    });
             }
             
         }

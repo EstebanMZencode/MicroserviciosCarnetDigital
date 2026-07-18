@@ -2,6 +2,6 @@
 {
     public interface IAuthE_Service
     {
-        public Task<bool> ValidarTokenAsync(string token);
+        public Task<MicroServicesResponse> ValidarTokenAsync(string token);
     }
 }

@@ -8,6 +8,6 @@
         public List<string>? Telefonos { get; set; } // Lista de números de teléfono del usuario opcionales
 
         // Un usuario puede tener varios perfiles asociados, por lo que se utiliza una lista de objetos PerfilUsuarioRequest 
-        public List<PerfilUsuarioRequest>? Perfiles { get; set; } 
+        public List<PerfilUsuarioRequest> Perfiles { get; set; } 
     }
 }

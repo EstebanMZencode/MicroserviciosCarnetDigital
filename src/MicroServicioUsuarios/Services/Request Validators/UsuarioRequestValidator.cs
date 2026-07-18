@@ -92,24 +92,3 @@ namespace MicroServicioUsuarios.Services.Validators
     }
 
 }
-
-// En PerfilRequestValidator, después de los RuleFor básicos:
-
-// TO-DO: Validar que TipoIdentificacion exista (MicroServicio Catálogos)
-// TO-DO: Validar que los numeros de teléfono sean válidos y no estén duplicados en Base de Datos
-
-// TO-DO: Validar que InstitucionID exista (Microservicio Instituciones)
-
-// TO-DO: Validar que TipoUsuarioID exista (Microservicio Catálogos)  
-
-// TO-DO: Validar que RolID exista y sea compatible con TipoUsuarioID
-
-// TO-DO: Validar que CarrerasID existan y pertenezcan a la institución
-
-// TO-DO: Validar que AreasTrabajoID existan y pertenezcan a la institución
-
-// TO-DO: Validar condicional por tipo: Estudiante → carreras obligatorias, Funcionario → áreas obligatorias
-
-// TO-DO: Validar que el email coincida con el dominio de la institución (Microservicio Instituciones)
-
-// TO-DO: Validar que email no exista ya en Login/EmailXUsuarios

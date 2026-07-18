@@ -24,7 +24,6 @@ namespace MicroServicioUsuarios
             [FromBody] UsuarioRequest usuario,
             IUsuarioService usuarioService)
         {
-            // Llama al servicio para crear el usuario
             return await usuarioService.CreateUsuarioServiceAsync(usuario, token);
         }
 

@@ -1,133 +1,122 @@
 ﻿using FluentValidation;
 using MicroServicioUsuarios.Entities;
 using MicroServicioUsuarios.Repository;
-using static MicroServicioUsuarios.Services.ExternalServices.ServicesStatus;
+using MicroServicioUsuarios.Services.ExternalServices;
 
 namespace MicroServicioUsuarios.Services
 {
     public class UsuarioService : IUsuarioService
     {
-        private readonly IValidator<UsuarioRequest> _validator;
-        private readonly ExternalServices.IAuthE_Service _authE_Service;
-        private readonly ExternalServices.ITipoIdentificacionE_Service _tipoIdentificacionE_Service;
         private readonly IUsuarioRepository _usuarioRepository;
+        private readonly IValidator<UsuarioRequest> _validator;
+        private readonly IAuthE_Service _authE_Service;
+        private readonly ITipoIdentificacionE_Service _tipoIdentService;
+        private readonly IInstitucionE_Service _institucionService;
 
         public UsuarioService(
+            IUsuarioRepository usuarioRepository,
             IValidator<UsuarioRequest> validator,
-            ExternalServices.IAuthE_Service authE_Service,
-            ExternalServices.ITipoIdentificacionE_Service tipoIdentificacionE_Service,
-            IUsuarioRepository usuarioRepository)
+            IAuthE_Service authE_Service,
+            ITipoIdentificacionE_Service tipoIdentService,
+            IInstitucionE_Service institucionService)
         {
+            _usuarioRepository = usuarioRepository;
             _validator = validator;
             _authE_Service = authE_Service;
-            _tipoIdentificacionE_Service = tipoIdentificacionE_Service;
-            _usuarioRepository = usuarioRepository;
+            _tipoIdentService = tipoIdentService;
+            _institucionService = institucionService;
         }
 
         // Crear Usuario
         public async Task<IResult> CreateUsuarioServiceAsync(UsuarioRequest usuario, string token)
         {
             // Validación del token
-            /*if (!await _authE_Service.ValidarTokenAsync(token))
+            var tokenResult = await _authE_Service.ValidarTokenAsync(token);
+
+            if (!tokenResult.IsSuccess)
             {
-                return Results.Json(new 
-                {
-                    StatusCode = 401,
-                    message = "Unauthorized"
-                }, 
-                statusCode: 401);
-            } //comentado para pruebas*/
+                return tokenResult.ToIResult();
+            } 
 
             // Valida UsuarioRequest usando FluentValidation
-            var validationResult = await _validator.ValidateAsync(usuario);
+            var validation = await ValidateRequestAsync(usuario);
 
-            if (!validationResult.IsValid)
+            if (validation is not null)
             {
-                var errores = validationResult.Errors
-                    .GroupBy(e => e.PropertyName)
-                    .ToDictionary(
-                       g => g.Key,
-                       g => g.Select(e => e.ErrorMessage).ToArray()
-                    );
-
-                return Results.Json(new
-                {
-                    StatusCode = 400,
-                    Message = "Bad Request",
-                    Errors = errores
-                }, statusCode: 400);
-
+                return validation;
             }
 
-            try
-            {
-                // Validaciones de microservicios externos 
-                var (tipoIdentStatusCode,
-                    tipoIdentStatus,
-                    tipoIdentMessage,
-                    tipoIdentError) = await _tipoIdentificacionE_Service
-                    .ValidarTipoIdentificacionAsync(usuario.TipoIdentificacion, token);
+            /**
+             * Validacón de microservicios externos
+             */
+            var tipoIdentResult = await _tipoIdentService
+                .ValidarTipoIdentificacionIDAsync(usuario.TipoIdentificacion, token);
 
-                if (tipoIdentStatus != ServiceStatus.Success)
+            if (!tipoIdentResult.IsSuccess)
+            {
+                return tipoIdentResult.ToIResult();
+            }
+
+            // Tipo Usuario
+
+            // Roles (no controlado en la db, solucionar revisar ese error)
+
+            foreach (var perfil in usuario.Perfiles)
+            {
+                var institucionesResult = await _institucionService.ValidarInstitucionIDAsync(perfil.InstitucionID, token);
+
+                if (!institucionesResult.IsSuccess)
                 {
-                    return Results.Json(new
-                    {
-                        StatusCode = tipoIdentStatusCode,
-                        Message = tipoIdentMessage,
-                        Errors = tipoIdentError
-                    }, statusCode: tipoIdentStatusCode);
+                    return institucionesResult.ToIResult();
                 }
 
-            }
-            catch (Exception ex)
-            {
-                // Error no controlado 
-                return Results.Json(new
-                {
-                    StatusCode = 500,
-                    Message = "Internal Server Error",
-                }, statusCode: 500);
+                var dominiosList = institucionesResult.Data; // Necesito los dominios para validar correos
             }
 
+            // Carreras
 
-            // Aquí iría la lógica para crear un usuario en la base de datos
-            // * Devuelve el objeto que irá en data y * //
+            // Areas Trabajo
+
+            // Crea el usuario en la Base de Datos
             await _usuarioRepository.CrearUsuarioDBAsync(usuario);
 
-            return Results.Json(new
+            return MicroServicesResponse.Created(usuario).ToIResult(); // Cambiar el objeto
+        }
+
+        private async Task<IResult?> ValidateRequestAsync(UsuarioRequest usuario)
+        {
+            var result = await _validator.ValidateAsync(usuario);
+
+            if (result.IsValid)
             {
-                StatusCode = 201,
-                Message = "Created",
-                Data = usuario // Cambiar a response
-            }, statusCode: 201);
+                return null;
+            }
+
+            var errors = result.Errors
+                .GroupBy(e => e.PropertyName)
+                .ToDictionary(
+                    g => g.Key,
+                    g => g.Select(e => e.ErrorMessage).ToArray()
+                );
+
+            return MicroServicesResponse.BadRequest(errors: errors).ToIResult();
         }
 
     }
 }
 
+// TO-DO: Validar que los numeros de teléfono sean válidos y no estén duplicados en Base de Datos
 
+// TO-DO: Validar que TipoUsuarioID exista (Microservicio Catálogos)  
 
-/*
-        private async Task<bool> ValidarTokenAsync(string token)
-        {
-            try
-            {
-                var validateUrl = _configuration["MicroServicios:AuthValidateUrl"]!;
-                var client = _httpClientFactory.CreateClient();
+// TO-DO: Validar que RolID exista y sea compatible con TipoUsuarioID
 
-                var request = new HttpRequestMessage(HttpMethod.Get, validateUrl);
-                request.Headers.Add("token", token);
+// TO-DO: Validar que CarrerasID existan y pertenezcan a la institución
 
-                var response = await client.SendAsync(request);
-                if (!response.IsSuccessStatusCode) return false;
+// TO-DO: Validar que AreasTrabajoID existan y pertenezcan a la institución
 
-                var body = await response.Content.ReadAsStringAsync();
-                return body.Contains("true", StringComparison.OrdinalIgnoreCase);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogWarning(ex, "No se pudo contactar al servicio de validacion de token.");
-                return false;
-            }
-        }
-*/
+// TO-DO: Validar condicional por tipo: Estudiante → carreras obligatorias, Funcionario → áreas obligatorias
+
+// TO-DO: Validar que el email coincida con el dominio de la institución (Microservicio Instituciones) *
+
+// TO-DO: Validar que email no exista ya en Login/EmailXUsuarios 
