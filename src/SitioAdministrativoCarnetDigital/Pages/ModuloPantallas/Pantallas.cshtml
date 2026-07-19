@@ -4,3 +4,129 @@
     ViewData["Title"] = "Pantallas";
     ViewData["Section"] = "Pantallas";
 }
+
+@if (Model.Mensaje != null)
+{
+    <div class="alert alert-success alert-dismissible fade show">
+        @Model.Mensaje
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+@if (Model.Error != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show">
+        @Model.Error
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Administración de Pantallas</h2>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalPantalla" onclick="limpiarForm()">
+        + Nueva Pantalla
+    </button>
+</div>
+
+<form method="get" class="mb-3 d-flex gap-2">
+    <input type="text" name="busqueda" value="@Model.Busqueda" class="form-control" placeholder="Buscar...">
+    <button class="btn btn-secondary" type="submit">Buscar</button>
+</form>
+
+<table class="table table-hover">
+    <thead class="table-light">
+        <tr>
+            <th>Nombre</th>
+            <th>Descripción</th>
+            <th>Ruta</th>
+            <th>Estado</th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var p in Model.Pantallas)
+        {
+            <tr>
+                <td>@p.NombrePantalla</td>
+                <td>@p.Descripcion</td>
+                <td>@p.Ruta</td>
+                <td>@(p.Estado ? "Activo" : "Inactivo")</td>
+                <td class="text-end">
+                    <button class="btn btn-sm btn-outline-secondary"
+                            onclick="cargarEditar('@p.PantallaID','@p.NombrePantalla','@p.Descripcion','@p.Ruta')"
+                            data-bs-toggle="modal" data-bs-target="#modalPantalla">
+                        Editar
+                    </button>
+                    <form method="post" asp-page-handler="Eliminar" asp-route-id="@p.PantallaID" class="d-inline"
+                          onsubmit="return confirm('¿Realmente desea eliminar el elemento seleccionado?')">
+                        <button class="btn btn-sm btn-outline-danger">Eliminar</button>
+                    </form>
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<nav>
+    <ul class="pagination">
+        @for (int i = 1; i <= Model.TotalPaginas; i++)
+        {
+            <li class="page-item @(i == Model.PageNumber ? "active" : "")">
+                <a class="page-link" asp-page="/ModuloPantallas/Pantallas" asp-route-page="@i" asp-route-busqueda="@Model.Busqueda">@i</a>
+            </li>
+        }
+    </ul>
+</nav>
+
+<!-- Modal -->
+<div class="modal fade" id="modalPantalla" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitulo">Nueva Pantalla</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="post" id="formPantalla">
+                <div class="modal-body">
+                    <input type="hidden" asp-for="Form.PantallaID" id="formId" />
+                    <div class="mb-3">
+                        <label class="form-label">Nombre</label>
+                        <input asp-for="Form.NombrePantalla" class="form-control" id="formNombre" required maxlength="100" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Descripción</label>
+                        <input asp-for="Form.Descripcion" class="form-control" id="formDescripcion" required maxlength="500" />
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ruta</label>
+                        <input asp-for="Form.Ruta" class="form-control" id="formRuta" required maxlength="500" />
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" id="btnGuardar">Guardar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function limpiarForm() {
+            document.getElementById('modalTitulo').innerText = 'Nueva Pantalla';
+            document.getElementById('formPantalla').action = '?handler=Crear';
+            document.getElementById('formId').value = '00000000-0000-0000-0000-000000000000';
+            document.getElementById('formNombre').value = '';
+            document.getElementById('formDescripcion').value = '';
+            document.getElementById('formRuta').value = '';
+        }
+        function cargarEditar(id, nombre, desc, ruta) {
+            document.getElementById('modalTitulo').innerText = 'Editar Pantalla';
+            document.getElementById('formPantalla').action = '?handler=Editar';
+            document.getElementById('formId').value = id;
+            document.getElementById('formNombre').value = nombre;
+            document.getElementById('formDescripcion').value = desc;
+            document.getElementById('formRuta').value = ruta;
+        }
+    </script>
+}
