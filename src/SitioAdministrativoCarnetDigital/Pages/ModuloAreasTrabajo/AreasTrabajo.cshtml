@@ -2,5 +2,268 @@
 @model SitioAdministrativoCarnetDigital.Pages.ModuloAreasTrabajo.AreasTrabajoModel
 @{
     ViewData["Title"] = "Áreas de Trabajo";
-    ViewData["Section"] = "Áreas de Trabajo";
+    ViewData["Section"] = "Administración de Áreas de Trabajo";
 }
+
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .card-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: var(--text-primary);
+    }
+
+    .tabla {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
+    }
+
+        .tabla th {
+            background-color: var(--content-bg);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tabla td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .tabla tr:hover {
+            background-color: var(--content-bg);
+        }
+
+    .btn-danger {
+        background-color: #ef4444;
+        color: white;
+    }
+
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
+    }
+
+    .alert-success {
+        background-color: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
+    }
+
+    .alert-error {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+    }
+
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+    }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+    .modal {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        width: 100%;
+        max-width: 500px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    }
+
+    .modal-sm {
+        max-width: 380px;
+    }
+
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: var(--text-secondary);
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+    }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+        }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 20px;
+    }
+</style>
+
+<div class="page-title">Administración de Áreas de Trabajo</div>
+
+@if (!string.IsNullOrEmpty(Model.MensajeExito))
+{
+    <div class="alert alert-success">@Model.MensajeExito</div>
+}
+@if (!string.IsNullOrEmpty(Model.MensajeError))
+{
+    <div class="alert alert-error">@Model.MensajeError</div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Listado de Áreas de Trabajo</h2>
+        <button class="btn btn-primary" onclick="abrirModalCrear()">+ Nuevo</button>
+    </div>
+    <table class="tabla">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th>Institución ID</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var a in Model.Areas)
+            {
+                <tr>
+                    <td>@a.NombreAreaTrab</td>
+                    <td>@a.InstitucionID</td>
+                    <td>
+                        <button class="btn btn-secondary" onclick="abrirModalEditar('@a.AreaTrabID', '@a.NombreAreaTrab', '@a.InstitucionID')">✏️</button>
+                        <button class="btn btn-danger" onclick="confirmarEliminar('@a.AreaTrabID', '@a.NombreAreaTrab')">🗑️</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal Crear/Editar -->
+<div class="modal-overlay" id="modalArea">
+    <div class="modal">
+        <div class="modal-header">
+            <h3 id="modalTitulo">Nueva Área de Trabajo</h3>
+            <button class="modal-close" onclick="cerrarModal()">✕</button>
+        </div>
+        <form method="post">
+            <input type="hidden" name="AreaTrabID" id="AreaTrabID" />
+            <div class="form-group">
+                <label>Nombre del Área</label>
+                <input type="text" name="NombreAreaTrab" id="NombreAreaTrab" class="form-control" required />
+            </div>
+            <div class="form-group">
+                <label>Institución ID</label>
+                <input type="text" name="InstitucionID" id="InstitucionID" class="form-control" required />
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Guardar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Modal Confirmar Eliminar -->
+<div class="modal-overlay" id="modalEliminar">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3>Confirmar Eliminación</h3>
+            <button class="modal-close" onclick="cerrarModalEliminar()">✕</button>
+        </div>
+        <p id="mensajeEliminar"></p>
+        <form method="post" asp-page-handler="Eliminar">
+            <input type="hidden" name="AreaTrabID" id="EliminarID" />
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalEliminar()">No</button>
+                <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function abrirModalCrear() {
+        document.getElementById('modalTitulo').innerText = 'Nueva Área de Trabajo';
+        document.getElementById('AreaTrabID').value = '';
+        document.getElementById('NombreAreaTrab').value = '';
+        document.getElementById('InstitucionID').value = '';
+        document.getElementById('modalArea').classList.add('active');
+    }
+
+    function abrirModalEditar(id, nombre, institucionId) {
+        document.getElementById('modalTitulo').innerText = 'Editar Área de Trabajo';
+        document.getElementById('AreaTrabID').value = id;
+        document.getElementById('NombreAreaTrab').value = nombre;
+        document.getElementById('InstitucionID').value = institucionId;
+        document.getElementById('modalArea').classList.add('active');
+    }
+
+    function cerrarModal() {
+        document.getElementById('modalArea').classList.remove('active');
+    }
+
+    function confirmarEliminar(id, nombre) {
+        document.getElementById('EliminarID').value = id;
+        document.getElementById('mensajeEliminar').innerText = `¿Realmente desea eliminar el área "${nombre}"?`;
+        document.getElementById('modalEliminar').classList.add('active');
+    }
+
+    function cerrarModalEliminar() {
+        document.getElementById('modalEliminar').classList.remove('active');
+    }
+</script>
