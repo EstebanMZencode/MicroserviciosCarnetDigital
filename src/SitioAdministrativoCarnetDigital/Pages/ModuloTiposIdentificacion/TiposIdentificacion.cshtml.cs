@@ -12,15 +12,9 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion
 
     public class TiposIdentificacionModel : PageModel
     {
-        
-        // TOKEN DE PRUEBA TEMPORAL — pegá acá el "access_token" (o el
-        // campo que corresponda) que te devuelve Postman al hacer login
-        // contra MicroServicioAuth/api/login. Se usa solo si no hay
-        // cookie "JWToken" real. BORRAR/vaciar esta constante en cuanto
-        // el login definitivo esté funcionando.
-        
-        private const string TokenPrueba = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJqaW1lbmV6QXJyaWV0QGdtYWlsLmNvbSIsImVtYWlsIjoiamltZW5lekFycmlldEBnbWFpbC5jb20iLCJqdGkiOiIyYjljN2VhZC1hMjI4LTQ1NDYtOGYzMS03MmQ3MTk2NmNkN2IiLCJyb2wiOiJlMjBhYzMxYy05MzI5LTRmYTAtODllYi02NTE1ZWY5MTY1MTkiLCJ0aXBvX3VzdWFyaW8iOiIwYjRkN2RhMC0xNDM4LTQzNmMtYjJkNC0yZDNhOGYzMDA1ZTciLCJleHAiOjE3ODQ3NjMxNzcsImlzcyI6Ik1pY3JvU2VydmljaW9BdXRoIiwiYXVkIjoiQ2FybmV0RXN0dWRpYW50aWxEaWdpdGFsIn0.iQ6IKoXIpXfJhu_6qA5efPNVKq2b_ZpiFoLJQsxEBA0";
-
+        // El login hacia el microservicio ya no se maneja acá — el propio
+        // ITiposIdentificacionApiClient se loguea solo 
+        // Esto es temporal, mientras no exista el login real del equipo.
         private readonly ITiposIdentificacionApiClient _client;
 
         public List<TipoIdentificacionDto> TiposIdentificacion { get; set; } = new();
@@ -33,22 +27,20 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion
 
         public async Task<IActionResult> OnGetAsync()
         {
-            var token = Request.Cookies["JWToken"] ?? TokenPrueba;
-
             
-            // BYPASS TEMPORAL — comentado para poder ver el diseño mientras
-            // no existe el login. REACTIVAR en cuanto el login definitivo
-            // esté listo (descomentar). Sin token real, la llamada al
-            // microservicio va a fallar con 401 — es esperado en modo bypass.
+            // BYPASS TEMPORAL 
+            // no existe el login del SITIO (distinto del login automático
+            // hacia el microservicio). REACTIVAR en cuanto el login
+            // definitivo esté listo (descomentar).
             // ============================================================
-            // if (string.IsNullOrEmpty(token))
+            // var tokenSesion = Request.Cookies["JWToken"];
+            // if (string.IsNullOrEmpty(tokenSesion))
             // {
             //     TempData["MensajeLogin"] = "Por favor inicie sesión para utilizar el sistema";
             //     return RedirectToPage("/Login");
             // }
 
             CargarViewData();
-            _client.SetToken(token ?? string.Empty);
 
             try
             {
@@ -64,15 +56,8 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion
 
         public async Task<IActionResult> OnPostGuardarAsync([FromBody] TipoIdentificacionInput input)
         {
-            var token = Request.Cookies["JWToken"] ?? TokenPrueba;
-            // BYPASS TEMPORAL — ver nota en OnGetAsync. Reactivar validación cuando exista login real.
-            // if (string.IsNullOrEmpty(token))
-            //     return new JsonResult(new { exito = false, mensaje = "Sesión expirada." }) { StatusCode = 401 };
-
             if (string.IsNullOrWhiteSpace(input.Nombre))
                 return new JsonResult(new { exito = false, mensaje = "El nombre no puede estar vacío." }) { StatusCode = 400 };
-
-            _client.SetToken(token ?? string.Empty);
 
             try
             {
@@ -91,13 +76,6 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion
 
         public async Task<IActionResult> OnPostEliminarAsync([FromBody] Guid id)
         {
-            var token = Request.Cookies["JWToken"] ?? TokenPrueba;
-            // BYPASS TEMPORAL — ver nota en OnGetAsync. Reactivar validación cuando exista login real.
-            // if (string.IsNullOrEmpty(token))
-            //     return new JsonResult(new { exito = false, mensaje = "Sesión expirada." }) { StatusCode = 401 };
-
-            _client.SetToken(token ?? string.Empty);
-
             try
             {
                 await _client.EliminarAsync(id);

@@ -2,9 +2,7 @@
 
 namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposUsuario
 {
-    // Campos confirmados contra la respuesta real del microservicio (Postman):
-    // { "tipoUsuarioID": "...", "nombreTipoUsuario": "...", "fechaCreacion": "...",
-    //   "fechaModificacion": "...", "estado": true }
+    
     public class TipoUsuarioDto
     {
         [JsonPropertyName("tipoUsuarioID")]

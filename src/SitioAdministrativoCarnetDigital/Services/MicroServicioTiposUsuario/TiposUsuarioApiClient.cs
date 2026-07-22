@@ -1,31 +1,51 @@
-﻿using System.Net.Http.Headers;
+﻿using System.Net;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposUsuario
 {
-    // Registrado en Program.cs vía:
-    // builder.Services.AddHttpClient<ITiposUsuarioApiClient, TiposUsuarioApiClient>(...)
-    // El HttpClient ya viene con BaseAddress = MicroServicios:TiposUsuarioUrl (appsettings.json).
-    // IMPORTANTE: esa URL debe terminar en "/" para que las rutas con {id} combinen bien.
     public class TiposUsuarioApiClient : ITiposUsuarioApiClient
     {
-        private readonly HttpClient _httpClient;
+        private readonly HttpClient _http;
         private static readonly JsonSerializerOptions _jsonOptions = new() { PropertyNameCaseInsensitive = true };
 
-        public TiposUsuarioApiClient(HttpClient httpClient)
+        public TiposUsuarioApiClient(HttpClient http, IConfiguration config)
         {
-            _httpClient = httpClient;
+            _http = http;
+            var tokenTask = ObtenerTokenAsync(config);
+            tokenTask.Wait();
+        }
+
+        private async Task ObtenerTokenAsync(IConfiguration config)
+        {
+            try
+            {
+                var authUrl = config["MicroServicios:AuthUrl"];
+                using var tempClient = new HttpClient();
+                var request = new HttpRequestMessage(HttpMethod.Post, $"{authUrl}/api/login");
+                request.Headers.Add("usuario", "jimenezArriet@gmail.com");
+                request.Headers.Add("contrasena", "Sebas123");
+                request.Headers.Add("tipo_usuario", "0b4d7da0-1438-436c-b2d4-2d3a8f3005e7");
+                var response = await tempClient.SendAsync(request);
+                if (response.IsSuccessStatusCode)
+                {
+                    var payload = await response.Content.ReadFromJsonAsync<Dictionary<string, string?>>();
+                    if (payload != null && payload.TryGetValue("access_token", out var token))
+                        _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                }
+            }
+            catch { }
         }
 
         public void SetToken(string token)
         {
-            _httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
 
         public async Task<List<TipoUsuarioDto>> ObtenerTodosAsync()
         {
-            var response = await _httpClient.GetAsync("");
+            var response = await _http.GetAsync("");
             await LanzarSiErrorAsync(response);
 
             var json = await response.Content.ReadAsStringAsync();
@@ -34,7 +54,7 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposUsuario
 
         public async Task<TipoUsuarioDto> CrearAsync(string nombre)
         {
-            var response = await _httpClient.PostAsJsonAsync("", new { nombreTipoUsuario = nombre });
+            var response = await _http.PostAsJsonAsync("", new { nombreTipoUsuario = nombre });
             await LanzarSiErrorAsync(response);
 
             var json = await response.Content.ReadAsStringAsync();
@@ -43,7 +63,7 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposUsuario
 
         public async Task<TipoUsuarioDto> ActualizarAsync(Guid id, string nombre)
         {
-            var response = await _httpClient.PutAsJsonAsync($"{id}", new { nombreTipoUsuario = nombre });
+            var response = await _http.PutAsJsonAsync($"{id}", new { nombreTipoUsuario = nombre });
             await LanzarSiErrorAsync(response);
 
             var json = await response.Content.ReadAsStringAsync();
@@ -52,7 +72,7 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposUsuario
 
         public async Task EliminarAsync(Guid id)
         {
-            var response = await _httpClient.DeleteAsync($"{id}");
+            var response = await _http.DeleteAsync($"{id}");
             await LanzarSiErrorAsync(response);
         }
 
@@ -66,7 +86,6 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposUsuario
             throw new HttpRequestException($"{mensaje} [URL: {uri}]", null, response.StatusCode);
         }
 
-        // El endpoint de TiposUsuario responde { "error": "..." } en los casos de error.
         private static string ExtraerMensaje(string json)
         {
             try
@@ -75,8 +94,8 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposUsuario
                 if (doc.RootElement.TryGetProperty("error", out var err))
                     return err.GetString() ?? "Ocurrió un error.";
             }
-            catch { /* body no era JSON */ }
-            return "Ocurrió un error.";
+            catch { }
+            return string.IsNullOrWhiteSpace(json) ? "Ocurrió un error." : json;
         }
     }
 }

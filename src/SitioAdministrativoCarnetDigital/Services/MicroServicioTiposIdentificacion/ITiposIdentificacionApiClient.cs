@@ -2,9 +2,7 @@
 
 namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposIdentificacion
 {
-    // Campos confirmados contra la respuesta real del microservicio (Postman):
-    // { "tipoIdentID": "...", "nombreTipoIdent": "...", "estado": true,
-    //   "fechaCreacion": "...", "fechaModificacion": "..." }
+   
     public class TipoIdentificacionDto
     {
         [JsonPropertyName("tipoIdentID")]
