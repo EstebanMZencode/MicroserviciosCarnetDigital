@@ -12,4 +12,4 @@
         public DateTime FechaModificacion { get; set; }
         public bool Estado { get; set; }
     }
-}
+} 

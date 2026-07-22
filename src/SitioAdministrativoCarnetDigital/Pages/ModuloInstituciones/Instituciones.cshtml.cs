@@ -96,4 +96,4 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones
             return Page();
         }
     }
-}
+} 

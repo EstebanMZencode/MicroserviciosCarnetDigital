@@ -10,4 +10,4 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioCarreras
         Task<bool> UpdateAsync(CarreraDto carrera, CancellationToken ct = default);
         Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
     }
-}
+} 

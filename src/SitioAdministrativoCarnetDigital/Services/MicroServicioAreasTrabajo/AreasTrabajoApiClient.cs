@@ -79,4 +79,4 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioAreasTrabajo
             return response.IsSuccessStatusCode;
         }
     }
-}
+} 

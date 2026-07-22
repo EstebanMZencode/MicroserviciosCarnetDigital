@@ -84,4 +84,4 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioCarreras
             return response.IsSuccessStatusCode;
         }
     }
-}
+} 

@@ -10,4 +10,4 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioInstituciones
         Task<bool> UpdateAsync(InstitucionDto institucion, CancellationToken ct = default);
         Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
     }
-}
+} 

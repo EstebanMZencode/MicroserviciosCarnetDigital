@@ -10,4 +10,4 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioAreasTrabajo
         Task<bool> UpdateAsync(AreaTrabajoDto area, CancellationToken ct = default);
         Task<bool> DeleteAsync(Guid id, CancellationToken ct = default);
     }
-}
+} 

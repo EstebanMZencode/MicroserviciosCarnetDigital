@@ -32,4 +32,4 @@ function confirmarEliminar(id, nombre) {
 
 function cerrarModalEliminar() {
     document.getElementById('modalEliminar').classList.remove('active');
-}
+} 
