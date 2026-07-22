@@ -1,6 +1,354 @@
 ﻿@page
 @model SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion.TiposIdentificacionModel
 @{
-    ViewData["Title"] = "Tipos de Identificación";
-    ViewData["Section"] = "Tipos de Identificación";
+    Layout = "_Layout";
+    ViewData["Title"] = "Tipos de Usuario";
+}
+
+@section Styles {
+    <style>
+        /* Alerta de éxito/error */
+        .ti-alert {
+            display: none;
+            margin-bottom: 16px;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .ti-alert-exito {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .ti-alert-error {
+            background: #fee2e2;
+            color: #991b1b;
+        }
+
+        /* Tabla */
+        .ti-tabla {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .ti-tabla thead tr {
+                text-align: left;
+                border-bottom: 1px solid var(--border-color);
+                font-size: 13px;
+                color: var(--text-secondary);
+            }
+
+            .ti-tabla th,
+            .ti-tabla td {
+                padding: 10px;
+            }
+
+            .ti-tabla tbody tr {
+                border-bottom: 1px solid var(--border-color);
+            }
+
+        .ti-col-acciones {
+            width: 160px;
+        }
+
+        /* Header de la card (título + botón nuevo) */
+        .ti-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+            .ti-card-header .page-title {
+                margin-bottom: 0;
+            }
+
+        /* Paginación */
+        .ti-paginacion {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 16px;
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .ti-paginacion-botones {
+            display: flex;
+            gap: 8px;
+        }
+
+        .ti-paginacion button:disabled {
+            opacity: .4;
+            cursor: not-allowed;
+        }
+
+        /* Modales */
+        .ti-modal-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .45);
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+        }
+
+            .ti-modal-overlay.ti-modal-visible {
+                display: flex;
+            }
+
+        .ti-modal-card {
+            width: 400px;
+        }
+
+            .ti-modal-card h3 {
+                margin-bottom: 16px;
+            }
+
+        .ti-modal-confirm {
+            width: 380px;
+        }
+
+            .ti-modal-confirm p {
+                margin-bottom: 20px;
+            }
+
+        .ti-form-label {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .ti-form-input {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0 20px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .ti-modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+        }
+
+        .ti-btn-eliminar-confirm {
+            background: #dc2626;
+        }
+    </style>
+}
+
+<form id="antiforgeryForm">@Html.AntiForgeryToken()</form>
+
+<div class="card">
+    <div class="ti-card-header">
+        <h1 class="page-title">Tipos de Usuario</h1>
+        <button class="btn btn-primary" id="btnNuevo">+ Nuevo</button>
+    </div>
+
+    <div id="alertBox" class="ti-alert"></div>
+
+    @if (Model.MensajeError is not null)
+    {
+        <div class="ti-alert ti-alert-error" style="display:block;">@Model.MensajeError</div>
+    }
+
+    <table class="ti-tabla">
+        <thead>
+            <tr>
+                <th>Nombre</th>
+                <th class="ti-col-acciones">Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tablaBody">
+            @foreach (var tipo in Model.TiposIdentificacion)
+            {
+                <tr data-id="@tipo.TipoIdentificacionID" data-nombre="@tipo.Nombre">
+                    <td>@tipo.Nombre</td>
+                    <td>
+                        <button class="btn btn-secondary btn-editar">Editar</button>
+                        <button class="btn btn-secondary btn-eliminar">Eliminar</button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <div class="ti-paginacion">
+        <span id="paginacionInfo"></span>
+        <div class="ti-paginacion-botones">
+            <button class="btn btn-secondary" id="btnPaginaAnterior">Anterior</button>
+            <button class="btn btn-secondary" id="btnPaginaSiguiente">Siguiente</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Crear/Editar -->
+<div id="modalForm" class="ti-modal-overlay">
+    <div class="card ti-modal-card">
+        <h3 id="modalTitulo">Nuevo Tipo de Identificación</h3>
+        <input type="hidden" id="inputId" />
+        <label class="ti-form-label">Nombre</label>
+        <input type="text" id="inputNombre" class="ti-form-input" />
+        <div class="ti-modal-footer">
+            <button class="btn btn-secondary" id="btnCancelar">Cancelar</button>
+            <button class="btn btn-primary" id="btnGuardar">Guardar</button>
+        </div>
+    </div>
+</div>
+
+<!-- Modal confirmar eliminar -->
+<div id="modalEliminar" class="ti-modal-overlay">
+    <div class="card ti-modal-confirm">
+        <p>¿Realmente desea eliminar el elemento seleccionado?</p>
+        <div class="ti-modal-footer">
+            <button class="btn btn-secondary" id="btnNo">No</button>
+            <button class="btn btn-primary ti-btn-eliminar-confirm" id="btnSi">Sí</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        (function () {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            let idAEliminar = null;
+
+            // TODO (parametrizable): idealmente este valor debería leerse del
+            // microservicio de Parametros (HU Web17) en vez de ser una constante fija.
+            const TAMANIO_PAGINA = 15;
+            let paginaActual = 1;
+
+            const alertBox = document.getElementById('alertBox');
+            const modalForm = document.getElementById('modalForm');
+            const modalEliminar = document.getElementById('modalEliminar');
+            const modalTitulo = document.getElementById('modalTitulo');
+            const inputId = document.getElementById('inputId');
+            const inputNombre = document.getElementById('inputNombre');
+            const filas = Array.from(document.querySelectorAll('#tablaBody tr'));
+            const paginacionInfo = document.getElementById('paginacionInfo');
+            const btnPaginaAnterior = document.getElementById('btnPaginaAnterior');
+            const btnPaginaSiguiente = document.getElementById('btnPaginaSiguiente');
+
+            function totalPaginas() {
+                return Math.max(1, Math.ceil(filas.length / TAMANIO_PAGINA));
+            }
+
+            function renderPagina() {
+                const inicio = (paginaActual - 1) * TAMANIO_PAGINA;
+                const fin = inicio + TAMANIO_PAGINA;
+
+                filas.forEach((fila, i) => {
+                    fila.style.display = (i >= inicio && i < fin) ? '' : 'none';
+                });
+
+                const total = totalPaginas();
+                paginacionInfo.textContent = filas.length === 0
+                    ? 'Sin registros'
+                    : `Página ${paginaActual} de ${total} (${filas.length} registros)`;
+
+                btnPaginaAnterior.disabled = paginaActual <= 1;
+                btnPaginaSiguiente.disabled = paginaActual >= total;
+            }
+
+            btnPaginaAnterior.addEventListener('click', () => {
+                if (paginaActual > 1) {
+                    paginaActual--;
+                    renderPagina();
+                }
+            });
+
+            btnPaginaSiguiente.addEventListener('click', () => {
+                if (paginaActual < totalPaginas()) {
+                    paginaActual++;
+                    renderPagina();
+                }
+            });
+
+            renderPagina();
+
+            function mostrarAlerta(mensaje, tipo) {
+                alertBox.classList.remove('ti-alert-exito', 'ti-alert-error');
+                alertBox.classList.add(tipo === 'exito' ? 'ti-alert-exito' : 'ti-alert-error');
+                alertBox.style.display = 'block';
+                alertBox.textContent = mensaje;
+                setTimeout(() => alertBox.style.display = 'none', 4000);
+            }
+
+            document.getElementById('btnNuevo').addEventListener('click', () => {
+                modalTitulo.textContent = 'Nuevo Tipo de Identificación';
+                inputId.value = '';
+                inputNombre.value = '';
+                modalForm.classList.add('ti-modal-visible');
+            });
+
+            document.getElementById('btnCancelar').addEventListener('click', () => {
+                modalForm.classList.remove('ti-modal-visible');
+            });
+
+            document.querySelectorAll('.btn-editar').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const fila = e.target.closest('tr');
+                    modalTitulo.textContent = 'Editar Tipo de Identificación';
+                    inputId.value = fila.dataset.id;
+                    inputNombre.value = fila.dataset.nombre;
+                    modalForm.classList.add('ti-modal-visible');
+                });
+            });
+
+            document.querySelectorAll('.btn-eliminar').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    idAEliminar = e.target.closest('tr').dataset.id;
+                    modalEliminar.classList.add('ti-modal-visible');
+                });
+            });
+
+            document.getElementById('btnNo').addEventListener('click', () => {
+                modalEliminar.classList.remove('ti-modal-visible');
+                idAEliminar = null;
+            });
+
+            document.getElementById('btnSi').addEventListener('click', async () => {
+                const response = await fetch('?handler=Eliminar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify(idAEliminar)
+                });
+                const data = await response.json();
+                modalEliminar.classList.remove('ti-modal-visible');
+                if (data.exito) {
+                    mostrarAlerta(data.mensaje, 'exito');
+                    setTimeout(() => location.reload(), 700);
+                } else {
+                    mostrarAlerta(data.mensaje, 'error');
+                }
+            });
+
+            document.getElementById('btnGuardar').addEventListener('click', async () => {
+                const id = inputId.value;
+                const nombre = inputNombre.value.trim();
+                if (!nombre) {
+                    mostrarAlerta('El nombre no puede estar vacío.', 'error');
+                    return;
+                }
+
+                const response = await fetch('?handler=Guardar', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'RequestVerificationToken': token },
+                    body: JSON.stringify({ tipoIdentificacionID: id || null, nombre: nombre })
+                });
+                const data = await response.json();
+                modalForm.classList.remove('ti-modal-visible');
+                if (data.exito) {
+                    mostrarAlerta(data.mensaje, 'exito');
+                    setTimeout(() => location.reload(), 700);
+                } else {
+                    mostrarAlerta(data.mensaje, 'error');
+                }
+            });
+        })();
+    </script>
 }
