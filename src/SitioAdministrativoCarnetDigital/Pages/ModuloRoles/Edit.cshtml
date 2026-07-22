@@ -1,0 +1,107 @@
+@page
+@model SitioAdministrativoCarnetDigital.Pages.ModuloRoles.EditModel
+@{
+    ViewData["Title"] = "Editar Rol";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/ModuloRoles/Roles.css" asp-append-version="true" />
+}
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+    @* ID del rol: se envía como campo oculto para el PUT *@
+    <input type="hidden" asp-for="Id" />
+
+    @* ── Barra superior: Volver / Guardar ──────────────────── *@
+    <div class="form-actions-bar">
+        <a asp-page="Roles" class="btn-back">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+                <line x1="19" y1="12" x2="5" y2="12"/>
+                <polyline points="12 19 5 12 12 5"/>
+            </svg>
+            Volver al listado
+        </a>
+        <button type="submit" class="btn-save">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/>
+                <polyline points="17 21 17 13 7 13 7 21"/>
+                <polyline points="7 3 7 8 15 8"/>
+            </svg>
+            Guardar
+        </button>
+    </div>
+
+    @* ── Etiqueta de error ──────────────────────────────────── *@
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="alert alert-error" role="alert">
+            <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"/>
+            </svg>
+            @Model.ErrorMessage
+        </div>
+    }
+
+    @* ── Datos del rol ──────────────────────────────────────── *@
+    <div class="form-section">
+        <div class="form-section-title">Editar Rol</div>
+
+        @* El ID se muestra como referencia pero no es editable. *@
+        <div class="form-group">
+            <label class="form-label">Identificador</label>
+            <input type="text" class="form-control" value="@Model.Id" readonly />
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="NombreRol">
+                Nombre del Rol <span class="req">*</span>
+            </label>
+            <input type="text"
+                   id="NombreRol"
+                   asp-for="NombreRol"
+                   class="form-control"
+                   maxlength="40"
+                   oninput="validarNombreRol(this)"
+                   autocomplete="off" />
+        </div>
+    </div>
+
+    @* ── Checklist de pantallas — pre-marcadas según el rol ─── *@
+    <div class="form-section">
+        <div class="form-section-title">Pantallas de acceso</div>
+
+        @if (Model.Pantallas.Any())
+        {
+            <div class="pantallas-grid">
+                @foreach (var p in Model.Pantallas)
+                {
+                    // Determina si esta pantalla ya estaba asignada al rol.
+                    var marcada = Model.PantallasSeleccionadas.Contains(p.PantallaID);
+                    <div class="pantalla-item @(marcada ? "is-checked" : "")">
+                        <input type="checkbox"
+                               name="PantallasSeleccionadas"
+                               value="@p.PantallaID"
+                               id="p_@p.PantallaID"
+                               @(marcada ? "checked" : "")
+                               onchange="togglePantalla(this)" />
+                        <label for="p_@p.PantallaID">@p.NombrePantalla</label>
+                    </div>
+                }
+            </div>
+        }
+        else
+        {
+            <p class="empty-pantallas">No hay pantallas disponibles para asignar.</p>
+        }
+    </div>
+</form>
+
+@section Scripts {
+    <script src="~/ModuloRoles/Roles.js" asp-append-version="true"></script>
+}
