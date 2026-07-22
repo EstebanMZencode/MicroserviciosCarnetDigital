@@ -138,6 +138,15 @@
         .tu-btn-eliminar-confirm {
             background: #dc2626;
         }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+            .btn-danger:hover {
+                background-color: #dc2626;
+            }
     </style>
 }
 
@@ -169,8 +178,8 @@
                 <tr data-id="@tipo.TipoUsuarioID" data-nombre="@tipo.Nombre">
                     <td>@tipo.Nombre</td>
                     <td>
-                        <button class="btn btn-secondary btn-editar">Editar</button>
-                        <button class="btn btn-secondary btn-eliminar">Eliminar</button>
+                        <button class="btn btn-secondary btn-editar">✏️</button>
+                        <button class="btn btn-danger btn-eliminar">🗑️</button>
                     </td>
                 </tr>
             }
@@ -352,4 +361,5 @@
         })();
     </script>
 }
+
 

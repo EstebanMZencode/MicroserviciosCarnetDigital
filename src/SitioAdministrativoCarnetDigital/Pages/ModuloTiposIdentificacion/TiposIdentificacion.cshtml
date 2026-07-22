@@ -138,6 +138,15 @@
         .ti-btn-eliminar-confirm {
             background: #dc2626;
         }
+
+        .btn-danger {
+            background-color: #ef4444;
+            color: white;
+        }
+
+            .btn-danger:hover {
+                background-color: #dc2626;
+            }
     </style>
 }
 
@@ -145,7 +154,7 @@
 
 <div class="card">
     <div class="ti-card-header">
-        <h1 class="page-title">Tipos de identificación</h1>
+        <h1 class="page-title">Tipos de Identificación</h1>
         <button class="btn btn-primary" id="btnNuevo">+ Nuevo</button>
     </div>
 
@@ -169,8 +178,8 @@
                 <tr data-id="@tipo.TipoIdentificacionID" data-nombre="@tipo.Nombre">
                     <td>@tipo.Nombre</td>
                     <td>
-                        <button class="btn btn-secondary btn-editar">Editar</button>
-                        <button class="btn btn-secondary btn-eliminar">Eliminar</button>
+                        <button class="btn btn-secondary btn-editar">✏️</button>
+                        <button class="btn btn-danger btn-eliminar">🗑️</button>
                     </td>
                 </tr>
             }
