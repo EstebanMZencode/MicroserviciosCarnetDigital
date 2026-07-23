@@ -2,5 +2,171 @@
 @model SitioAdministrativoCarnetDigital.Pages.ModuloRoles.RolesModel
 @{
     ViewData["Title"] = "Roles";
-    ViewData["Section"] = "Roles";
+    Layout = "_Layout";
+}
+
+@section Styles {
+    @* CSS propio del módulo — ubicado en la misma carpeta ModuloRoles *@
+    <link rel="stylesheet" href="~/pages-static/ModuloRoles/Roles.css" asp-append-version="true" />
+}
+
+@* ── Cabecera de página ─────────────────────────────────────── *@
+<div class="page-header">
+    <div class="page-header-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        </svg>
+    </div>
+    <div>
+        <h1>Roles</h1>
+        <p>Administración de roles del sistema</p>
+    </div>
+</div>
+
+@* ── Etiqueta de éxito ──────────────────────────────────────── *@
+@if (!string.IsNullOrEmpty(Model.SuccessMessage))
+{
+    <div class="alert alert-success" role="alert">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
+        </svg>
+        @Model.SuccessMessage
+    </div>
+}
+
+@* ── Etiqueta de error ──────────────────────────────────────── *@
+@if (!string.IsNullOrEmpty(Model.ErrorMessage))
+{
+    <div class="alert alert-error" role="alert">
+        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" clip-rule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" />
+        </svg>
+        @Model.ErrorMessage
+    </div>
+}
+
+@* ── Tarjeta con tabla de roles ─────────────────────────────── *@
+<div class="r-card">
+
+    @* Encabezado: conteo + botón Nuevo *@
+    <div class="r-card-header">
+        <span class="r-card-title">Listado (@Model.TotalRegistros registros)</span>
+        <a asp-page="Create" class="btn-nuevo">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2.5">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+            Nuevo
+        </a>
+    </div>
+
+    @* Tabla *@
+    <table class="r-table">
+        <thead>
+            <tr>
+                <th>Nombre del Rol</th>
+                <th style="text-align:right; padding-right:30px;">Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Roles.Any())
+            {
+                foreach (var rol in Model.Roles)
+                {
+                    <tr>
+                        <td>@rol.NombreRol</td>
+                        <td>
+                            <div class="r-actions">
+                                @* Botón editar: navega a Edit con el ID en el query string *@
+                                <a asp-page="Edit" asp-route-id="@rol.RolID"
+                                   class="btn-ico btn-ico-edit" title="Editar">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2">
+                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                    </svg>
+                                </a>
+                                @* Botón eliminar: abre modal de confirmación *@
+                                <button type="button" class="btn-ico btn-ico-delete" title="Eliminar"
+                                        onclick="showDeleteModal('@rol.RolID','@Html.Raw(Html.Encode(rol.NombreRol))')">
+                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
+                                         stroke="currentColor" stroke-width="2">
+                                        <polyline points="3 6 5 6 21 6" />
+                                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
+                                        <path d="M10 11v6M14 11v6" />
+                                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+                                    </svg>
+                                </button>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="2"
+                        style="text-align:center; color:#9ca3af; padding:40px 24px; font-size:.875rem;">
+                        No hay roles registrados aún.
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @* Paginación *@
+    <div class="r-pagination">
+        <span class="r-pagination-info">
+            Página @Model.PaginaActual de @Model.TotalPaginas
+        </span>
+        <div class="r-pagination-nums">
+            @for (int i = 1; i <= Model.TotalPaginas; i++)
+            {
+                <a href="?pagina=@i"
+                   class="btn-pag @(i == Model.PaginaActual ? "pag-active" : "")">@i</a>
+            }
+        </div>
+    </div>
+</div>
+
+@* ── Formulario oculto para el soft-delete ──────────────────── *@
+@* Se envía cuando el usuario confirma en el modal de advertencia *@
+<form id="formDelete" method="post" asp-page-handler="Delete" style="display:none;">
+    <input type="hidden" id="inputDeleteId" name="rolId" />
+</form>
+
+@* ── Modal de advertencia: confirmar eliminación ──────────────── *@
+<div class="modal-bg" id="modalDelete" role="dialog" aria-modal="true">
+    <div class="modal-box">
+        <div class="modal-icon modal-icon-warn">
+            <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                <line x1="12" y1="9" x2="12" y2="13" />
+                <line x1="12" y1="17" x2="12.01" y2="17" />
+            </svg>
+        </div>
+        <div class="modal-title">Eliminar Rol</div>
+        <div class="modal-msg">
+            ¿Está seguro que desea eliminar el rol
+            <strong id="delRolNombre"></strong>?<br>
+            Esta acción no se puede revertir.
+        </div>
+        <div class="modal-btns">
+            <button type="button" class="btn-modal-cancel" onclick="hideDeleteModal()">
+                No, cancelar
+            </button>
+            <button type="button" class="btn-modal-danger" onclick="confirmDelete()">
+                Sí, eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/pages-static/ModuloRoles/Roles.js" asp-append-version="true"></script>
 }
