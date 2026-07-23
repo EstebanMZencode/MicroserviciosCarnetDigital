@@ -1,0 +1,38 @@
+﻿@page
+@model SitioAdministrativoCarnetDigital.Pages.ModuloEstadoUsuario.EstadosModel
+@{
+    Layout = "_Layout";
+    ViewData["Title"] = "Cambiar Estado de Usuario";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/ModuloEstadoUsuario/Estados.css" asp-append-version="true" />
+}
+
+<form id="antiforgeryForm">@Html.AntiForgeryToken()</form>
+
+<div class="card">
+    <h1 class="page-title">Cambiar Estado de Usuario</h1>
+
+    <div id="alertBox" class="ce-alert"></div>
+
+    <div class="ce-form">
+        <label class="ce-form-label">Email del usuario</label>
+        <input type="email" id="inputEmail" class="ce-form-input" placeholder="usuario@cuc.ac.cr" />
+
+        <label class="ce-form-label">Nuevo estado</label>
+        <select id="inputEstado" class="ce-form-select">
+            <option value="">Seleccione un estado...</option>
+            <!-- TODO: si se agregan más estados en la tabla EstadosUsuarios, agregarlos acá -->
+            <option value="6176376E-1E47-44FB-95E5-FB28D966842E">Activo</option>
+            <option value="359152E6-AF99-4F84-BD12-BF98F35750B1">Inactivo</option>
+            <option value="6FBAF596-E10D-49AF-B869-C1511E97AEFF">Pendiente</option>
+        </select>
+
+        <button class="btn btn-primary" id="btnCambiar">Cambiar estado</button>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/ModuloEstadoUsuario/Estados.js" asp-append-version="true"></script>
+}
