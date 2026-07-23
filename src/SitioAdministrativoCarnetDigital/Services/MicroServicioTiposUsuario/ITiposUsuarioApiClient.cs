@@ -2,7 +2,6 @@
 
 namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposUsuario
 {
-    
     public class TipoUsuarioDto
     {
         [JsonPropertyName("tipoUsuarioID")]

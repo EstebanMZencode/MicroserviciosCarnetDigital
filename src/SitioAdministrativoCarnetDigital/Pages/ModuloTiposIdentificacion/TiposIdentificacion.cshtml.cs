@@ -12,9 +12,6 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion
 
     public class TiposIdentificacionModel : PageModel
     {
-        // El login hacia el microservicio ya no se maneja acá — el propio
-        // ITiposIdentificacionApiClient se loguea solo 
-        // Esto es temporal, mientras no exista el login real del equipo.
         private readonly ITiposIdentificacionApiClient _client;
 
         public List<TipoIdentificacionDto> TiposIdentificacion { get; set; } = new();
@@ -25,32 +22,25 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion
             _client = client;
         }
 
+        private void AplicarToken()
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+            if (!string.IsNullOrEmpty(token))
+                _client.SetToken(token);
+        }
+
         public async Task<IActionResult> OnGetAsync()
         {
-            
-            // BYPASS TEMPORAL 
-            // no existe el login del SITIO (distinto del login automático
-            // hacia el microservicio). REACTIVAR en cuanto el login
-            // definitivo esté listo (descomentar).
-            // ============================================================
-            // var tokenSesion = Request.Cookies["JWToken"];
-            // if (string.IsNullOrEmpty(tokenSesion))
-            // {
-            //     TempData["MensajeLogin"] = "Por favor inicie sesión para utilizar el sistema";
-            //     return RedirectToPage("/Login");
-            // }
-
             CargarViewData();
-
             try
             {
+                AplicarToken();
                 TiposIdentificacion = await _client.ObtenerTodosAsync();
             }
             catch (HttpRequestException ex)
             {
                 MensajeError = $"Error al cargar: {ex.StatusCode} - {ex.Message}";
             }
-
             return Page();
         }
 
@@ -61,6 +51,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion
 
             try
             {
+                AplicarToken();
                 if (input.TipoIdentificacionID is null || input.TipoIdentificacionID == Guid.Empty)
                     await _client.CrearAsync(input.Nombre);
                 else
@@ -78,6 +69,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion
         {
             try
             {
+                AplicarToken();
                 await _client.EliminarAsync(id);
                 return new JsonResult(new { exito = true, mensaje = "Tipo de identificación eliminado correctamente." });
             }

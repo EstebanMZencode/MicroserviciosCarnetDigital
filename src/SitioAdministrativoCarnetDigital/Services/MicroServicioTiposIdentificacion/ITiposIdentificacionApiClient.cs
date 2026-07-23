@@ -2,7 +2,6 @@
 
 namespace SitioAdministrativoCarnetDigital.Services.MicroServicioTiposIdentificacion
 {
-   
     public class TipoIdentificacionDto
     {
         [JsonPropertyName("tipoIdentID")]
