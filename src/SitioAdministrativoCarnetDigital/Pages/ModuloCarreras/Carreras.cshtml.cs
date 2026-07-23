@@ -24,10 +24,18 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloCarreras
         [BindProperty] public string Telefono { get; set; } = string.Empty;
         [BindProperty] public Guid InstitucionID { get; set; }
 
+        private void AplicarToken()
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+            if (!string.IsNullOrEmpty(token))
+                _carrerasApi.SetToken(token);
+        }
+
         public async Task OnGetAsync()
         {
             try
             {
+                AplicarToken();
                 Carreras = await _carrerasApi.GetAllAsync();
             }
             catch (Exception ex)
@@ -40,6 +48,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloCarreras
         {
             try
             {
+                AplicarToken();
                 var carrera = new CarreraDto
                 {
                     CarreraID = CarreraID,
@@ -72,6 +81,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloCarreras
                 MensajeError = $"Error: {ex.Message}";
             }
 
+            AplicarToken();
             Carreras = await _carrerasApi.GetAllAsync();
             return Page();
         }
@@ -80,6 +90,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloCarreras
         {
             try
             {
+                AplicarToken();
                 var ok = await _carrerasApi.DeleteAsync(CarreraID);
                 if (ok)
                     MensajeExito = "Carrera eliminada correctamente.";
@@ -91,8 +102,9 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloCarreras
                 MensajeError = $"Error: {ex.Message}";
             }
 
+            AplicarToken();
             Carreras = await _carrerasApi.GetAllAsync();
             return Page();
         }
     }
-} 
+}

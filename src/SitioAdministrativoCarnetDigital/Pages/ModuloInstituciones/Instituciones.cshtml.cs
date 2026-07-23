@@ -23,10 +23,18 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones
         [BindProperty] public string Telefono { get; set; } = string.Empty;
         [BindProperty] public string Dominios { get; set; } = string.Empty;
 
+        private void AplicarToken()
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+            if (!string.IsNullOrEmpty(token))
+                _institucionesApi.SetToken(token);
+        }
+
         public async Task OnGetAsync()
         {
             try
             {
+                AplicarToken();
                 Instituciones = await _institucionesApi.GetAllAsync();
             }
             catch (Exception ex)
@@ -39,6 +47,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones
         {
             try
             {
+                AplicarToken();
                 var institucion = new InstitucionDto
                 {
                     InstitucionID = InstitucionID,
@@ -73,6 +82,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones
                 MensajeError = $"Error: {ex.Message}";
             }
 
+            AplicarToken();
             Instituciones = await _institucionesApi.GetAllAsync();
             return Page();
         }
@@ -81,6 +91,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones
         {
             try
             {
+                AplicarToken();
                 var ok = await _institucionesApi.DeleteAsync(InstitucionID);
                 if (ok)
                     MensajeExito = "Institución eliminada correctamente.";
@@ -92,8 +103,9 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones
                 MensajeError = $"Error: {ex.Message}";
             }
 
+            AplicarToken();
             Instituciones = await _institucionesApi.GetAllAsync();
             return Page();
         }
     }
-} 
+}

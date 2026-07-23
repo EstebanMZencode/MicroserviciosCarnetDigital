@@ -18,6 +18,7 @@
 
     public interface IBitacorasApiClient
     {
-        Task<BitacoraPagedResult> GetAllAsync(int page = 1, int pageSize = 15, string? search = null, string? token = null);
+        void SetToken(string token);
+        Task<BitacoraPagedResult> GetAllAsync(int page = 1, int pageSize = 15, string? search = null);
     }
 }

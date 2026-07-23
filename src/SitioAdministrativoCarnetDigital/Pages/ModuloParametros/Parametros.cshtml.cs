@@ -18,6 +18,13 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloParametros
 
         public ParametrosModel(IParametrosApiClient api) => _api = api;
 
+        private void AplicarToken()
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+            if (!string.IsNullOrEmpty(token))
+                _api.SetToken(token);
+        }
+
         public async Task<IActionResult> OnGetAsync()
         {
             ViewData["Section"] = "Administración de Parámetros";
@@ -26,6 +33,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloParametros
             ViewData["UserInitials"] = "U";
             try
             {
+                AplicarToken();
                 var result = await _api.GetAllAsync(1, 15);
                 Parametros = result.Items;
             }
@@ -37,6 +45,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloParametros
         {
             try
             {
+                AplicarToken();
                 var dto = new ParametroDto
                 {
                     Identificador = input.Identificador ?? string.Empty,
@@ -71,6 +80,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloParametros
         {
             try
             {
+                AplicarToken();
                 var ok = await _api.DeleteAsync(id);
                 if (ok) return new JsonResult(new { exito = true, mensaje = "Parámetro eliminado correctamente." });
                 return new JsonResult(new { exito = false, mensaje = "No se pudo eliminar." }) { StatusCode = 400 };

@@ -1,6 +1,4 @@
-﻿using System.Net;
-
-namespace SitioAdministrativoCarnetDigital.Services.MicroServicioPantallas
+﻿namespace SitioAdministrativoCarnetDigital.Services.MicroServicioPantallas
 {
     public class PantallaDto
     {
@@ -23,10 +21,11 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioPantallas
 
     public interface IPantallasApiClient
     {
-        Task<PantallaPagedResult> GetAllAsync(int page = 1, int pageSize = 15, string? search = null, string? token = null);
-        Task<PantallaDto?> GetByIdAsync(Guid id, string? token = null);
-        Task<(bool ok, string? error)> CreateAsync(PantallaDto dto, string? token = null);
-        Task<(bool ok, string? error)> UpdateAsync(PantallaDto dto, string? token = null);
-        Task<bool> DeleteAsync(Guid id, string? token = null);
+        void SetToken(string token);
+        Task<PantallaPagedResult> GetAllAsync(int page = 1, int pageSize = 15, string? search = null);
+        Task<PantallaDto?> GetByIdAsync(Guid id);
+        Task<(bool ok, string? error)> CreateAsync(PantallaDto dto);
+        Task<(bool ok, string? error)> UpdateAsync(PantallaDto dto);
+        Task<bool> DeleteAsync(Guid id);
     }
 }

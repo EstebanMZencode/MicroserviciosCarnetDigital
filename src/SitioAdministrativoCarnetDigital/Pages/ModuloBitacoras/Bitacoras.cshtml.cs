@@ -14,6 +14,13 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloBitacoras
 
         public BitacorasModel(IBitacorasApiClient api) => _api = api;
 
+        private void AplicarToken()
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+            if (!string.IsNullOrEmpty(token))
+                _api.SetToken(token);
+        }
+
         public async Task OnGetAsync(string? fecha = null, string? usuario = null, string? accion = null)
         {
             FiltroFecha = fecha;
@@ -25,6 +32,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloBitacoras
             ViewData["UserInitials"] = "U";
             try
             {
+                AplicarToken();
                 var result = await _api.GetAllAsync(1, 100);
                 var items = result.Items;
 

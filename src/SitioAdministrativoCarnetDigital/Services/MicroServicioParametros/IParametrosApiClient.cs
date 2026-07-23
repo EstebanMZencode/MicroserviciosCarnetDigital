@@ -19,10 +19,11 @@
 
     public interface IParametrosApiClient
     {
-        Task<ParametroPagedResult> GetAllAsync(int page = 1, int pageSize = 15, string? search = null, string? token = null);
-        Task<ParametroDto?> GetByIdAsync(string id, string? token = null);
-        Task<(bool ok, string? error)> CreateAsync(ParametroDto dto, string? token = null);
-        Task<(bool ok, string? error)> UpdateAsync(ParametroDto dto, string? token = null);
-        Task<bool> DeleteAsync(string id, string? token = null);
+        void SetToken(string token);
+        Task<ParametroPagedResult> GetAllAsync(int page = 1, int pageSize = 15, string? search = null);
+        Task<ParametroDto?> GetByIdAsync(string id);
+        Task<(bool ok, string? error)> CreateAsync(ParametroDto dto);
+        Task<(bool ok, string? error)> UpdateAsync(ParametroDto dto);
+        Task<bool> DeleteAsync(string id);
     }
 }

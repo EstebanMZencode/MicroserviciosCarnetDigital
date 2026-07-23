@@ -21,10 +21,18 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAreasTrabajo
         [BindProperty] public string NombreAreaTrab { get; set; } = string.Empty;
         [BindProperty] public Guid InstitucionID { get; set; }
 
+        private void AplicarToken()
+        {
+            var token = HttpContext.Session.GetString("JwtToken");
+            if (!string.IsNullOrEmpty(token))
+                _areasApi.SetToken(token);
+        }
+
         public async Task OnGetAsync()
         {
             try
             {
+                AplicarToken();
                 Areas = await _areasApi.GetAllAsync();
             }
             catch (Exception ex)
@@ -37,6 +45,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAreasTrabajo
         {
             try
             {
+                AplicarToken();
                 var area = new AreaTrabajoDto
                 {
                     AreaTrabID = AreaTrabID,
@@ -66,6 +75,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAreasTrabajo
                 MensajeError = $"Error: {ex.Message}";
             }
 
+            AplicarToken();
             Areas = await _areasApi.GetAllAsync();
             return Page();
         }
@@ -74,6 +84,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAreasTrabajo
         {
             try
             {
+                AplicarToken();
                 var ok = await _areasApi.DeleteAsync(AreaTrabID);
                 if (ok)
                     MensajeExito = "Área eliminada correctamente.";
@@ -85,8 +96,9 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAreasTrabajo
                 MensajeError = $"Error: {ex.Message}";
             }
 
+            AplicarToken();
             Areas = await _areasApi.GetAllAsync();
             return Page();
         }
     }
-} 
+}
