@@ -2,13 +2,12 @@
 @model SitioAdministrativoCarnetDigital.Pages.ModuloRoles.RolesModel
 @{
     ViewData["Title"] = "Roles";
-    ViewData["Section"] = "Roles";
     Layout = "_Layout";
 }
 
 @section Styles {
     @* CSS propio del módulo — ubicado en la misma carpeta ModuloRoles *@
-    <link rel="stylesheet" href="~/ModuloRoles/Roles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/pages-static/ModuloRoles/Roles.css" asp-append-version="true" />
 }
 
 @* ── Cabecera de página ─────────────────────────────────────── *@
@@ -169,6 +168,5 @@
 </div>
 
 @section Scripts {
-    <script src="~/ModuloRoles/Roles.js" asp-append-version="true"></script>
+    <script src="~/pages-static/ModuloRoles/Roles.js" asp-append-version="true"></script>
 }
-

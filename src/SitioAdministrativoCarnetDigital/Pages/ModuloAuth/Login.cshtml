@@ -1,0 +1,109 @@
+﻿@page
+@model SitioAdministrativoCarnetDigital.Pages.ModuloAuth.LoginModel
+@{
+    @* Sin Layout: esta página ocupa toda la pantalla con su propio fondo. *@
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Iniciar sesión — Carnet Digital CUC</title>
+
+    @* CSS en wwwroot/ModuloAuth/Login.css *@
+    <link rel="stylesheet" href="~/pages-static/ModuloAuth/Login.css" asp-append-version="true" />
+</head>
+<body>
+
+    <div class="login-card">
+
+        @* ── Marca ──────────────────────────────────────────────── *@
+        <div class="brand">
+            <div class="brand-logo">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                     stroke="currentColor" stroke-width="2"
+                     stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="5" width="18" height="14" rx="2" />
+                    <circle cx="9" cy="10" r="2" />
+                    <path d="M15 8h2" />
+                    <path d="M15 12h2" />
+                    <path d="M7 15h10" />
+                </svg>
+            </div>
+            <div class="brand-text">
+                <h1>Carnet Digital</h1>
+                <small>Colegio Universitario de Cartago</small>
+            </div>
+        </div>
+
+        @* ── Mensaje de alerta (error / redirección por sesión) ──── *@
+        <div id="formAlert"
+             class="form-alert @(!string.IsNullOrEmpty(Model.AlertMessage) ? "show" : "")">
+            @Model.AlertMessage
+        </div>
+
+        @* ── Formulario ──────────────────────────────────────────── *@
+        <form id="loginForm" method="post" autocomplete="on" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="form-group">
+                <label class="form-label" for="inputUsuario">
+                    Usuario (email institucional)
+                </label>
+                <input type="email"
+                       id="inputUsuario"
+                       asp-for="Usuario"
+                       class="form-input"
+                       placeholder="admin@cuc.ac.cr"
+                       autocomplete="username"
+                       spellcheck="false"
+                       inputmode="email" />
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="inputContrasena">Contraseña</label>
+                <input type="password"
+                       id="inputContrasena"
+                       asp-for="Contrasena"
+                       class="form-input"
+                       placeholder="••••••••"
+                       autocomplete="current-password" />
+            </div>
+
+            <button type="submit" id="btnSubmit" class="btn-submit">
+                Aceptar
+            </button>
+        </form>
+
+        @* ── Enlace de registro ──────────────────────────────────── *@
+        <p class="register-row">
+            ¿No tiene cuenta?
+            <a href="/ModuloAutoregistro/Autoregistro">Regístrese aquí</a>
+        </p>
+
+        @* ── Caja de demo ────────────────────────────────────────── *@
+        <div class="demo-box">
+            Demo: <strong>admin@cuc.ac.cr / Admin123</strong><br>
+            (3 intentos fallidos bloquean el acceso)
+        </div>
+    </div>
+
+    @* ── Script ──────────────────────────────────────────────────── *@
+    <script src="~/pages-static/ModuloAuth/Login.js" asp-append-version="true"></script>
+
+    @* Bloque de login exitoso: se ejecuta solo cuando el servidor autenticó correctamente.
+       1. Guarda la respuesta completa en localStorage (email, tokens, expiración).
+       2. Redirige al Index. Separamos estas dos acciones del redirect de C# porque
+          localStorage no es accesible desde el servidor. *@
+    @if (Model.LoginDataJson != null)
+    {
+        <script>
+            storeLoginData(@Html.Raw(Model.LoginDataJson));
+            window.location.replace('/');
+        </script>
+    }
+
+</body>
+</html>

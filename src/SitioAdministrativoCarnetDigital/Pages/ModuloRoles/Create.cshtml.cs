@@ -11,13 +11,13 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloRoles
 
         // GUID generado en el GET y pasado como campo oculto en el POST,
         // porque el endpoint POST de MicroServicioRoles lo recibe en el header.
-        [BindProperty] public Guid         NuevoRolId            { get; set; }
-        [BindProperty] public string        NombreRol             { get; set; } = string.Empty;
-        [BindProperty] public List<Guid>    PantallasSeleccionadas { get; set; } = new();
+        [BindProperty] public Guid NuevoRolId { get; set; }
+        [BindProperty] public string NombreRol { get; set; } = string.Empty;
+        [BindProperty] public List<Guid> PantallasSeleccionadas { get; set; } = new();
 
         // Lista completa de pantallas para armar el checklist.
-        public List<PantallaDto> Pantallas    { get; private set; } = new();
-        public string?           ErrorMessage { get; private set; }
+        public List<PantallaDto> Pantallas { get; private set; } = new();
+        public string? ErrorMessage { get; private set; }
 
         public CreateModel(IRolesApiClient rolesApi)
         {
@@ -92,3 +92,4 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloRoles
         }
     }
 }
+

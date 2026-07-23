@@ -11,13 +11,13 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloRoles
 
         // ID del rol que se edita: viene en el query string del GET
         // y como campo oculto en el POST.
-        [BindProperty(SupportsGet = true)] public Guid        Id                    { get; set; }
-        [BindProperty]                     public string       NombreRol             { get; set; } = string.Empty;
-        [BindProperty]                     public List<Guid>   PantallasSeleccionadas { get; set; } = new();
+        [BindProperty(SupportsGet = true)] public Guid Id { get; set; }
+        [BindProperty] public string NombreRol { get; set; } = string.Empty;
+        [BindProperty] public List<Guid> PantallasSeleccionadas { get; set; } = new();
 
         // Catálogo completo de pantallas para el checklist.
-        public List<PantallaDto> Pantallas    { get; private set; } = new();
-        public string?           ErrorMessage { get; private set; }
+        public List<PantallaDto> Pantallas { get; private set; } = new();
+        public string? ErrorMessage { get; private set; }
 
         public EditModel(IRolesApiClient rolesApi)
         {
@@ -35,7 +35,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloRoles
                 return RedirectToPage("Roles");
 
             // GET del rol y GET de pantallas en paralelo.
-            var rolTask       = _rolesApi.GetRolAsync(token, Id);
+            var rolTask = _rolesApi.GetRolAsync(token, Id);
             var pantallasTask = _rolesApi.GetPantallasAsync(token, pageSize: 200);
             await Task.WhenAll(rolTask, pantallasTask);
 
@@ -47,7 +47,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloRoles
             }
 
             // Pre-rellenar nombre y pantallas seleccionadas con los datos del rol.
-            NombreRol             = rolResult.Data.NombreRol;
+            NombreRol = rolResult.Data.NombreRol;
             PantallasSeleccionadas = rolResult.Data.Pantallas
                                                .Select(p => p.PantallaID)
                                                .ToList();
