@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using System.Text.Json;
 using MicroServicioPantallas.Entities;
 using MicroServicioPantallas.Services;
 using MicroServicioPantallas.Security;
@@ -8,6 +9,25 @@ namespace MicroServicioPantallas
 {
     public static class PantallaEndpoints
     {
+        private static Guid ExtraerUsuarioId(string? token)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(token)) return Guid.Empty;
+                var partes = token.Split('.');
+                if (partes.Length < 2) return Guid.Empty;
+                var payload = partes[1];
+                var padding = payload.Length % 4;
+                if (padding > 0) payload += new string('=', 4 - padding);
+                var json = System.Text.Encoding.UTF8.GetString(Convert.FromBase64String(payload));
+                var doc = JsonDocument.Parse(json);
+                if (doc.RootElement.TryGetProperty("jti", out var jti) && Guid.TryParse(jti.GetString(), out var id))
+                    return id;
+            }
+            catch { }
+            return Guid.Empty;
+        }
+
         public static void MapPantallaEndpoints(this IEndpointRouteBuilder routes)
         {
             var group = routes
@@ -60,7 +80,8 @@ namespace MicroServicioPantallas
                 var errores = Validar(pantalla);
                 if (errores.Count > 0) return Results.BadRequest(new { errores });
 
-                var creada = await service.CreateAsync(pantalla);
+                var usuarioId = ExtraerUsuarioId(token);
+                var creada = await service.CreateAsync(pantalla, usuarioId, token);
                 if (creada is null) return Results.Problem("No se pudo crear la pantalla");
 
                 return Results.Created($"/pantallas/{creada.PantallaID}", creada);
@@ -84,7 +105,8 @@ namespace MicroServicioPantallas
                 if (exists is null) return Results.NotFound();
 
                 pantalla.PantallaID = id;
-                await service.UpdateAsync(pantalla);
+                var usuarioId = ExtraerUsuarioId(token);
+                await service.UpdateAsync(pantalla, usuarioId, token);
 
                 var current = await service.GetByIdAsync(id) ?? pantalla;
                 return Results.Ok(current);
@@ -103,7 +125,8 @@ namespace MicroServicioPantallas
                 var exists = await service.GetByIdAsync(id);
                 if (exists is null) return Results.NotFound();
 
-                await service.LogicDeleteAsync(id);
+                var usuarioId = ExtraerUsuarioId(token);
+                await service.LogicDeleteAsync(id, usuarioId, token);
                 return Results.NoContent();
             })
             .WithName("DeletePantalla").WithOpenApi();
