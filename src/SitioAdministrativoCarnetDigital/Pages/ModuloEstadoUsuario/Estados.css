@@ -1,0 +1,38 @@
+﻿.ce-alert {
+    display: none;
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.ce-alert-exito {
+    background: #dcfce7;
+    color: #166534;
+}
+
+.ce-alert-error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.ce-form {
+    max-width: 420px;
+}
+
+.ce-form-label {
+    font-size: 14px;
+    color: var(--text-secondary);
+    display: block;
+    margin-bottom: 6px;
+}
+
+.ce-form-input,
+.ce-form-select {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 14px;
+}

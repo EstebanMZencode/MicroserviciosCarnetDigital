@@ -5,12 +5,134 @@
     ViewData["Section"] = "Inicio";
 }
 
-<!-- Login -->
+@section Styles {
+    <style>
+        .in-hero {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            padding: 40px;
+        }
 
+        .in-hero-texto {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
 
+        .in-hero-logo {
+            width: 64px;
+            height: 64px;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .in-hero-fecha {
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-transform: capitalize;
+            margin-bottom: 4px;
+        }
+
+        .in-hero-saludo {
+            font-size: 26px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .in-hero-sub {
+            color: var(--text-secondary);
+            font-size: 15px;
+        }
+
+        .in-hero-ilustracion {
+            flex-shrink: 0;
+        }
+
+        .in-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .in-info-card {
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: var(--card-bg);
+        }
+
+        .in-info-icono {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: rgba(79, 70, 229, .1);
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .in-info-titulo {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .in-info-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+        }
+    </style>
+}
 
 <!-- Bienvenida -->
-<!-- Nota: Cambien esto  -->
-<div class="text-center">
-    <h1 class="display-4">Página de Bienvenida</h1> 
+<div class="card in-hero">
+    <div class="in-hero-texto">
+        <div class="brand-logo in-hero-logo">
+            <!-- TODO: reemplazar por el logo real del sistema si tienen uno -->
+            CD
+        </div>
+        <div>
+            <div class="in-hero-fecha">@Model.FechaHoy</div>
+            <div class="in-hero-saludo">@Model.Saludo, @Model.NombreUsuario</div>
+            <div class="in-hero-sub">Sistema de Carnet Digital &mdash; Colegio Universitario de Cartago</div>
+        </div>
+    </div>
+
+    <div class="in-hero-ilustracion">
+        <svg width="140" height="100" viewBox="0 0 140 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="15" width="100" height="70" rx="10" fill="#4f46e5" opacity="0.08" />
+            <rect x="30" y="25" width="80" height="50" rx="8" fill="#ffffff" stroke="#4f46e5" stroke-width="1.5" />
+            <circle cx="48" cy="42" r="8" fill="#4f46e5" opacity="0.25" />
+            <rect x="62" y="37" width="36" height="4" rx="2" fill="#4f46e5" opacity="0.3" />
+            <rect x="62" y="45" width="26" height="4" rx="2" fill="#4f46e5" opacity="0.2" />
+            <rect x="38" y="60" width="60" height="4" rx="2" fill="#4f46e5" opacity="0.15" />
+            <rect x="38" y="68" width="40" height="4" rx="2" fill="#4f46e5" opacity="0.15" />
+        </svg>
+    </div>
+</div>
+
+<!-- Información del sistema -->
+<div class="in-info-grid">
+    <div class="in-info-card">
+        <div class="in-info-icono">ID</div>
+        <div class="in-info-titulo">Carnet institucional digital</div>
+        <div class="in-info-desc">Cada estudiante y funcionario porta su identificación en un dispositivo móvil.</div>
+    </div>
+    <div class="in-info-card">
+        <div class="in-info-icono">QR</div>
+        <div class="in-info-titulo">Validación rápida</div>
+        <div class="in-info-desc">El personal de seguridad corrobora la identidad escaneando un código QR.</div>
+    </div>
+    <div class="in-info-card">
+        <div class="in-info-icono">CR</div>
+        <div class="in-info-titulo">Colegio Universitario de Cartago</div>
+        <div class="in-info-desc">Plataforma administrativa para gestionar usuarios, instituciones y carreras.</div>
+    </div>
 </div>
