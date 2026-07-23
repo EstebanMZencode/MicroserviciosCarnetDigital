@@ -4,11 +4,33 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 
 // ============================================
+// SESIÓN — almacena el JWT Token del usuario
+// ============================================
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession(options =>
+{
+    options.IdleTimeout = TimeSpan.FromHours(2);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
+    options.Cookie.SecurePolicy = Microsoft.AspNetCore.Http.CookieSecurePolicy.SameAsRequest;
+});
+
+// ============================================
 // INYECCIÓN DE DEPENDENCIAS - MICROSERVICIOS
 // ============================================
 
 // HttpClient para consumir cada microservicio REST
 // Las URLs base se configuran en appsettings.json
+
+// MicroServicioAuth — Login
+builder.Services.AddHttpClient<
+    SitioAdministrativoCarnetDigital.Services.MicroServicioAuth.IAuthApiClient,
+    SitioAdministrativoCarnetDigital.Services.MicroServicioAuth.AuthApiClient>(client =>
+    {
+        var baseUrl = builder.Configuration["MicroServicios:AuthUrl"]
+                      ?? throw new InvalidOperationException("MicroServicios:AuthUrl no configurado");
+        client.BaseAddress = new Uri(baseUrl);
+    });
 
 // MicroServicioAreasTrabajo
 builder.Services.AddHttpClient<
@@ -27,16 +49,6 @@ builder.Services.AddHttpClient<
     {
         var baseUrl = builder.Configuration["MicroServicios:AutoregistroUrl"]
                       ?? throw new InvalidOperationException("MicroServicios:AutoregistroUrl no configurado");
-        client.BaseAddress = new Uri(baseUrl);
-    });
-
-// MicroServicioAutorizacion
-builder.Services.AddHttpClient<
-    SitioAdministrativoCarnetDigital.Services.MicroServicioAutorizacion.IAutorizacionApiClient,
-    SitioAdministrativoCarnetDigital.Services.MicroServicioAutorizacion.AutorizacionApiClient>(client =>
-    {
-        var baseUrl = builder.Configuration["MicroServicios:AuthUrl"]
-                      ?? throw new InvalidOperationException("MicroServicios:AuthUrl no configurado");
         client.BaseAddress = new Uri(baseUrl);
     });
 
@@ -169,10 +181,62 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
+// Archivos estáticos de la carpeta Pages/ (CSS y JS por módulo).
+// Pages/ModuloRoles/Roles.css → ~/pages-static/ModuloRoles/Roles.css
+// Pages/ModuloAuth/Login.css  → ~/pages-static/ModuloAuth/Login.css
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
+        Path.Combine(builder.Environment.ContentRootPath, "Pages")),
+    RequestPath = "/pages-static"
+});
+
 app.UseHttpsRedirection();
+
+// Archivos estáticos de wwwroot (Bootstrap, jQuery, lib/, etc.)
 app.UseStaticFiles();
 
 app.UseRouting();
+
+// La sesión debe estar activa antes del middleware que la consulta.
+app.UseSession();
+
+// ── Middleware global de autorización por sesión ──────────────────────────────
+app.Use(async (context, next) =>
+{
+    var path = context.Request.Path.Value ?? string.Empty;
+
+    var esPublico =
+        path.StartsWith("/ModuloAuth/Login", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/ModuloAutoregistro/Autoregistro", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/pages-static/", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/lib/", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/css/", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/js/", StringComparison.OrdinalIgnoreCase) ||
+        path.StartsWith("/_", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/favicon.ico", StringComparison.OrdinalIgnoreCase) ||
+        path.Equals("/Error", StringComparison.OrdinalIgnoreCase);
+
+    if (!esPublico)
+    {
+        var token = context.Session.GetString("JwtToken");
+
+        if (string.IsNullOrEmpty(token))
+        {
+            // sinSesion=1 le indica al Login que muestre el mensaje
+            // "Por favor inicie sesión para utilizar el sistema."
+            // Solo se agrega cuando el usuario venía de una página real.
+            var destino = path.Equals("/", StringComparison.OrdinalIgnoreCase)
+                ? "/ModuloAuth/Login"
+                : "/ModuloAuth/Login?sinSesion=1";
+
+            context.Response.Redirect(destino);
+            return;
+        }
+    }
+
+    await next(context);
+});
 
 app.UseAuthorization();
 

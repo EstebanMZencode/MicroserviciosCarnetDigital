@@ -7,6 +7,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloTiposIdentificacion
     {
         public void OnGet()
         {
+
         }
     }
 }

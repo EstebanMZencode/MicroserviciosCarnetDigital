@@ -7,7 +7,6 @@ namespace SitioAdministrativoCarnetDigital.Pages
     {
         public void OnGet()
         {
-
         }
     }
 }

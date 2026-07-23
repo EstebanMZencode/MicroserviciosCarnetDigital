@@ -1,0 +1,221 @@
+﻿/* ============================================================
+   ModuloAuth — Login
+   Página standalone (Layout = null), fondo de pantalla completo.
+   ============================================================ */
+
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* Fondo: gradiente azul profundo igual al de la captura */
+body {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #0d1b6e 0%, #1a237e 30%, #3949ab 70%, #283593 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    padding: 16px;
+}
+
+/* ── Tarjeta central ─────────────────────────────────────────── */
+.login-card {
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.28);
+    padding: 44px 40px 36px;
+    width: 100%;
+    max-width: 430px;
+    /* Animación sutil de entrada */
+    animation: cardIn .25s ease;
+}
+
+@keyframes cardIn {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ── Marca / Identidad ───────────────────────────────────────── */
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    justify-content: center;
+    margin-bottom: 32px;
+}
+
+/* Ícono cuadrado con bordes redondeados, reemplaza el "CD" de la captura */
+.brand-logo {
+    width: 54px;
+    height: 54px;
+    background: #1a237e;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(26, 35, 126, 0.35);
+}
+
+.brand-text h1 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #1a237e;
+    line-height: 1.2;
+    margin: 0;
+}
+
+.brand-text small {
+    font-size: 0.76rem;
+    color: #6b7280;
+    display: block;
+    margin-top: 1px;
+}
+
+/* ── Mensaje de error / advertencia ─────────────────────────── */
+/* Oculto por defecto; JS / Razor lo muestra con la clase .show */
+.form-alert {
+    display: none;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #b91c1c;
+    font-size: 0.84rem;
+    line-height: 1.45;
+    padding: 11px 14px;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    text-align: center;
+}
+
+    .form-alert.show {
+        display: block;
+    }
+
+/* ── Grupos de campo ─────────────────────────────────────────── */
+.form-group {
+    margin-bottom: 18px;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 6px;
+}
+
+/* font-size 16px: evita el zoom automático en Safari/iOS */
+.form-input {
+    width: 100%;
+    padding: 12px 14px;
+    font-size: 16px;
+    color: #111827;
+    background: #ffffff;
+    border: 1.5px solid #e5e7eb;
+    border-radius: 10px;
+    transition: border-color .15s, box-shadow .15s;
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+    .form-input::placeholder {
+        color: #9ca3af;
+    }
+
+    .form-input:focus {
+        outline: none;
+        border-color: #3f51b5;
+        box-shadow: 0 0 0 3px rgba(63, 81, 181, 0.13);
+    }
+
+/* ── Botón principal ─────────────────────────────────────────── */
+.btn-submit {
+    display: block;
+    width: 100%;
+    padding: 13px;
+    margin-top: 8px;
+    background: #3f51b5;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    letter-spacing: .01em;
+    cursor: pointer;
+    transition: background .15s, transform .1s, opacity .15s;
+}
+
+    .btn-submit:hover {
+        background: #3449a0;
+    }
+
+    .btn-submit:active {
+        transform: scale(.985);
+    }
+
+    .btn-submit:disabled {
+        opacity: .65;
+        cursor: not-allowed;
+    }
+
+/* ── Enlace de registro ──────────────────────────────────────── */
+.register-row {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 0.875rem;
+    color: #6b7280;
+}
+
+    .register-row a {
+        color: #3f51b5;
+        font-weight: 600;
+        text-decoration: none;
+    }
+
+        .register-row a:hover {
+            text-decoration: underline;
+        }
+
+/* ── Caja de demo ────────────────────────────────────────────── */
+.demo-box {
+    margin-top: 18px;
+    background: #f3f4f8;
+    border-radius: 10px;
+    padding: 10px 16px;
+    font-size: 0.78rem;
+    color: #6b7280;
+    text-align: center;
+    line-height: 1.6;
+}
+
+    .demo-box strong {
+        color: #374151;
+    }
+
+/* ── Responsive ──────────────────────────────────────────────── */
+@media (max-width: 480px) {
+    .login-card {
+        padding: 32px 22px 28px;
+        border-radius: 16px;
+    }
+
+    .brand-logo {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+    }
+
+    .brand-text h1 {
+        font-size: 1.1rem;
+    }
+}

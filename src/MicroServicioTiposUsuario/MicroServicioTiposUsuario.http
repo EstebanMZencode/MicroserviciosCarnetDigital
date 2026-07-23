@@ -1,6 +1,27 @@
-@MicroServicioTiposUsuario_HostAddress = http://localhost:5001
+@baseUrl = https://localhost:7234/api/tipousuario
 
-GET {{MicroServicioTiposUsuario_HostAddress}}/weatherforecast/
-Accept: application/json
+### Obtener todos los tipos de usuario
+GET {{baseUrl}}/
 
-###
+### Obtener tipo de usuario por ID
+GET {{baseUrl}}/1
+
+### Crear tipo de usuario
+POST {{baseUrl}}/
+Content-Type: application/json
+
+{
+  "nombreTipoUsuario": "Estudiante"
+}
+
+### Actualizar tipo de usuario
+PUT {{baseUrl}}/1
+Content-Type: application/json
+
+{
+  "tipoUsuarioID": 1,
+  "nombreTipoUsuario": "Estudiante Actualizado"
+}
+
+### Eliminar tipo de usuario
+DELETE {{baseUrl}}/1
