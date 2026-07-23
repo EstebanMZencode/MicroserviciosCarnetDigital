@@ -39,3 +39,25 @@ document.getElementById('sidebarToggle')?.addEventListener('click', function ()
         }
     });
 })();
+
+
+document.addEventListener("DOMContentLoaded", function () {
+
+const avatar = document.getElementById("userAvatar");
+const dropdown = document.getElementById("userDropdown");
+
+avatar.addEventListener("click", function (e) {
+
+  e.stopPropagation();
+
+  dropdown.classList.toggle("show");
+
+});
+
+document.addEventListener("click", function () {
+
+    dropdown.classList.remove("show");
+
+});
+
+});

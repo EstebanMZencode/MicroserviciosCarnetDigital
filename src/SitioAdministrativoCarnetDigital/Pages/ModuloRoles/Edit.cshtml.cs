@@ -48,9 +48,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloRoles
 
             // Pre-rellenar nombre y pantallas seleccionadas con los datos del rol.
             NombreRol = rolResult.Data.NombreRol;
-            PantallasSeleccionadas = rolResult.Data.Pantallas
-                                               .Select(p => p.PantallaID)
-                                               .ToList();
+            PantallasSeleccionadas = rolResult.Data.Pantallas.ToList();
 
             var pantResult = pantallasTask.Result;
             Pantallas = pantResult.Success && pantResult.Data is not null

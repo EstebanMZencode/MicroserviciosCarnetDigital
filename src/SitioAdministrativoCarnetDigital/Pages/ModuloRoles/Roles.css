@@ -142,11 +142,24 @@
     }
 
 .btn-ico-edit {
-    color: #f97316;
+    color: #f59e0b; /* Naranja */
+    background: transparent;
+    border: none;
+}
+
+.btn-ico-edit:hover {
+    color: #d97706; /* Naranja más oscuro */
 }
 
 .btn-ico-delete {
-    color: #9ca3af;
+    background: #dc2626;
+    color: #ffffff;
+    border: none;
+    border-radius: 6px;
+}
+
+.btn-ico-delete:hover {
+    background: #b91c1c;
 }
 
 /* ── Paginación ───────────────────────────────────────────────── */

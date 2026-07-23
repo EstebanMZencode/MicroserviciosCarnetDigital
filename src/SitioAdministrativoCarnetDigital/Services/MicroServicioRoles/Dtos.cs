@@ -5,14 +5,17 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioRoles
     // ── Respuesta paginada del GET /api/rol ─────────────────────────────────
     public class RolPaginadoDto
     {
-        [JsonPropertyName("paginaActual")]
-        public int PaginaActual { get; set; }
+        [JsonPropertyName("totalRegistros")]
+        public int TotalRegistros { get; set; }
 
         [JsonPropertyName("totalPaginas")]
         public int TotalPaginas { get; set; }
 
-        [JsonPropertyName("totalRegistros")]
-        public int TotalRegistros { get; set; }
+        [JsonPropertyName("pagina")]
+        public int Pagina { get; set; }
+
+        [JsonPropertyName("tamano")]
+        public int Tamano { get; set; }
 
         [JsonPropertyName("roles")]
         public List<RolDto> Roles { get; set; } = new();
@@ -28,7 +31,7 @@ namespace SitioAdministrativoCarnetDigital.Services.MicroServicioRoles
         public string NombreRol { get; set; } = string.Empty;
 
         [JsonPropertyName("pantallas")]
-        public List<PantallaRolDto> Pantallas { get; set; } = new();
+        public List<Guid> Pantallas { get; set; } = new();
     }
 
     // Pantalla tal como viene embebida en la respuesta de MicroServicioRoles.

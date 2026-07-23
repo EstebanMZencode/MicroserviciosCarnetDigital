@@ -172,9 +172,27 @@
                         <span class="user-name">@ViewData["UserName"]</span>
                         <span class="user-role">@ViewData["UserRole"]</span>
                     </div>
-                    <div class="user-avatar">
-                        <span>@ViewData["UserInitials"]</span> <!-- Nota: Cambiar, aquí va el avatar -->
+
+                    <div class="user-menu">
+
+                        <div class="user-avatar" id="userAvatar">
+                            <span>@ViewData["UserInitials"]</span>
+                        </div>
+
+                        <div class="user-dropdown" id="userDropdown">
+
+                            <form method="post" asp-page="/ModuloAuth/Logout">
+
+                                <button type="submit" class="logout-button">
+                                    Cerrar sesión
+                                </button>
+
+                            </form>
+
+                        </div>
+
                     </div>
+
                 </div>
             </header>
 
