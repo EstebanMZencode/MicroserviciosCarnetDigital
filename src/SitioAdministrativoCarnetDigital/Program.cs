@@ -184,12 +184,12 @@ if (!app.Environment.IsDevelopment())
 // Archivos estáticos de la carpeta Pages/ (CSS y JS por módulo).
 // Pages/ModuloRoles/Roles.css → ~/pages-static/ModuloRoles/Roles.css
 // Pages/ModuloAuth/Login.css  → ~/pages-static/ModuloAuth/Login.css
-app.UseStaticFiles(new StaticFileOptions
+/*app.UseStaticFiles(new StaticFileOptions
 {
     FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(
         Path.Combine(builder.Environment.ContentRootPath, "Pages")),
     RequestPath = "/pages-static"
-});
+});*/
 
 app.UseHttpsRedirection();
 

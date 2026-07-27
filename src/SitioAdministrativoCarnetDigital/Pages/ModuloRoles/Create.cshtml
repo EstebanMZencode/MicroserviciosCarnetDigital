@@ -6,7 +6,524 @@
 }
 
 @section Styles {
-    <link rel="stylesheet" href="~/pages-static/ModuloRoles/Roles.css" asp-append-version="true" />
+    <style>
+        /* ── Cabecera de página ─────────────────────────────────────── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 24px;
+        }
+
+        .page-header-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: #5c6bc0;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .page-header h1 {
+            font-size: 1.45rem;
+            font-weight: 700;
+            color: #1f2937;
+            margin: 0 0 2px;
+            line-height: 1.2;
+        }
+
+        .page-header p {
+            font-size: 0.82rem;
+            color: #6b7280;
+            margin: 0;
+        }
+
+        /* ── Tarjeta contenedora ─────────────────────────────────────── */
+        .r-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.05);
+            overflow: hidden;
+        }
+
+        /* Cabecera de la tarjeta: título izquierda, acción derecha */
+        .r-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px 24px;
+        }
+
+        .r-card-title {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        /* ── Botón "+ Nuevo" ──────────────────────────────────────────── */
+        .btn-nuevo {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #5c6bc0;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 18px;
+            font-size: .875rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+            .btn-nuevo:hover {
+                background: #4f5ba8;
+                color: #fff;
+            }
+
+        /* ── Tabla de roles ───────────────────────────────────────────── */
+        .r-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .r-table thead tr {
+                border-bottom: 1px solid #e5e7eb;
+            }
+
+            .r-table th {
+                padding: 11px 24px;
+                font-size: .72rem;
+                font-weight: 600;
+                text-transform: uppercase;
+                letter-spacing: .06em;
+                color: #9ca3af;
+                text-align: left;
+            }
+
+            .r-table td {
+                padding: 14px 24px;
+                font-size: .88rem;
+                color: #374151;
+                border-bottom: 1px solid #f3f4f6;
+                vertical-align: middle;
+            }
+
+            .r-table tbody tr:last-child td {
+                border-bottom: none;
+            }
+
+            .r-table tbody tr:hover {
+                background: #fafafa;
+            }
+
+        /* Celda de acciones alineada a la derecha */
+        .r-actions {
+            display: flex;
+            gap: 4px;
+            justify-content: flex-end;
+        }
+
+        /* Botones icono (lápiz / basurero) */
+        .btn-ico {
+            background: none;
+            border: 1px solid transparent;
+            border-radius: 6px;
+            padding: 6px 7px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            transition: border-color .15s, background .15s;
+        }
+
+            .btn-ico:hover {
+                border-color: #e5e7eb;
+                background: #f9fafb;
+            }
+
+        .btn-ico-edit {
+            color: #f59e0b; /* Naranja */
+            background: transparent;
+            border: none;
+        }
+
+            .btn-ico-edit:hover {
+                color: #d97706; /* Naranja más oscuro */
+            }
+
+        .btn-ico-delete {
+            background: #dc2626;
+            color: #ffffff;
+            border: none;
+            border-radius: 6px;
+        }
+
+            .btn-ico-delete:hover {
+                background: #b91c1c;
+            }
+
+        /* ── Paginación ───────────────────────────────────────────────── */
+        .r-pagination {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 24px;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        .r-pagination-info {
+            font-size: .82rem;
+            color: #6b7280;
+        }
+
+        .r-pagination-nums {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-pag {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid #e5e7eb;
+            background: #fff;
+            color: #374151;
+            font-size: .82rem;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+            .btn-pag:hover {
+                background: #f3f4f6;
+            }
+
+            .btn-pag.pag-active {
+                background: #5c6bc0;
+                color: #fff;
+                border-color: #5c6bc0;
+            }
+
+        /* ── Etiquetas inline éxito / error ──────────────────────────── */
+        /* Estos estilos replican exactamente los de las capturas: fondo   */
+        /* salmón para error y verde-oliva para éxito, icono a la izq.    */
+        .alert {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 13px 16px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: .875rem;
+            font-weight: 500;
+            line-height: 1.4;
+        }
+
+            .alert svg {
+                flex-shrink: 0;
+            }
+
+        .alert-error {
+            background: #d9614f;
+            color: #fff;
+        }
+
+        .alert-success {
+            background: #7ba428;
+            color: #fff;
+        }
+
+        /* ── Barra de acciones de formulario ─────────────────────────── */
+        .form-actions-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 22px;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fff;
+            color: #374151;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 9px 16px;
+            font-size: .875rem;
+            font-weight: 500;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+            .btn-back:hover {
+                background: #f9fafb;
+                color: #374151;
+            }
+
+        .btn-save {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            background: #5c6bc0;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 20px;
+            font-size: .875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+            .btn-save:hover {
+                background: #4f5ba8;
+            }
+
+            .btn-save:disabled {
+                background: #b0b8e0;
+                cursor: not-allowed;
+            }
+
+        /* ── Sección de formulario ────────────────────────────────────── */
+        .form-section {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,.06);
+            padding: 24px;
+            margin-bottom: 16px;
+        }
+
+        .form-section-title {
+            font-size: .95rem;
+            font-weight: 600;
+            color: #374151;
+            margin: 0 0 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: .875rem;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .req {
+            color: #ef4444;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 9px 13px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: .9rem;
+            color: #1f2937;
+            background: #fff;
+            box-sizing: border-box;
+            transition: border-color .15s, box-shadow .15s;
+        }
+
+            .form-control:focus {
+                outline: none;
+                border-color: #5c6bc0;
+                box-shadow: 0 0 0 3px rgba(92,107,192,.12);
+            }
+
+            .form-control[readonly] {
+                background: #f9fafb;
+                color: #9ca3af;
+                cursor: default;
+            }
+
+        /* ── Checklist de pantallas ───────────────────────────────────── */
+        .pantallas-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 10px;
+        }
+
+        .pantalla-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 14px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color .15s, background .15s;
+            user-select: none;
+        }
+
+            .pantalla-item:hover {
+                border-color: #5c6bc0;
+                background: #f5f6ff;
+            }
+
+            .pantalla-item.is-checked {
+                border-color: #5c6bc0;
+                background: #eef0fb;
+            }
+
+            .pantalla-item input[type="checkbox"] {
+                accent-color: #5c6bc0;
+                width: 16px;
+                height: 16px;
+                cursor: pointer;
+                flex-shrink: 0;
+            }
+
+            .pantalla-item label {
+                font-size: .875rem;
+                color: #374151;
+                cursor: pointer;
+                line-height: 1.4;
+            }
+
+        .empty-pantallas {
+            font-size: .875rem;
+            color: #9ca3af;
+            font-style: italic;
+        }
+
+        /* ── Overlays / Modales ───────────────────────────────────────── */
+        /* Fondo semitransparente que cubre toda la ventana */
+        .modal-bg {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,.42);
+            z-index: 9990;
+            align-items: center;
+            justify-content: center;
+        }
+
+            .modal-bg.show {
+                display: flex;
+            }
+
+        /* Tarjeta blanca del modal */
+        .modal-box {
+            background: #fff;
+            border-radius: 16px;
+            padding: 36px 32px;
+            max-width: 430px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 60px rgba(0,0,0,.18);
+            animation: popIn .18s ease;
+        }
+
+        /* Círculo de ícono */
+        .modal-icon {
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+        }
+
+        .modal-icon-warn {
+            background: #fef3c7;
+            color: #f59e0b;
+        }
+
+        .modal-icon-success {
+            background: #dcfce7;
+            color: #22c55e;
+        }
+
+        .modal-icon-error {
+            background: #fee2e2;
+            color: #ef4444;
+        }
+
+        /* Textos del modal */
+        .modal-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #1a2744;
+            margin-bottom: 10px;
+        }
+
+        .modal-msg {
+            font-size: .88rem;
+            color: #6b7280;
+            line-height: 1.55;
+            margin-bottom: 28px;
+        }
+
+        /* Fila de botones */
+        .modal-btns {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn-modal-cancel {
+            padding: 10px 24px;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            background: #fff;
+            color: #374151;
+            font-size: .875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+            .btn-modal-cancel:hover {
+                background: #f9fafb;
+            }
+
+        /* Botón rojo de confirmación de borrado */
+        .btn-modal-danger {
+            padding: 10px 24px;
+            border: none;
+            border-radius: 8px;
+            background: #ef4444;
+            color: #fff;
+            font-size: .875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background .15s;
+        }
+
+            .btn-modal-danger:hover {
+                background: #dc2626;
+            }
+
+        /* Botón de cierre genérico (gris) */
+        .btn-modal-close {
+            padding: 10px 28px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            background: #6b7280;
+            color: #fff;
+            font-size: .875rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+
+    </style>
 }
 
 <form method="post">
@@ -96,5 +613,89 @@
 </form>
 
 @section Scripts {
-    <script src="~/pages-static/ModuloRoles/Roles.js" asp-append-version="true"></script>
+    <script>
+                // ============================================================
+        // ModuloRoles — lógica JavaScript
+        // ============================================================
+
+        // ── Modal de confirmación de eliminación ─────────────────────
+        let _rolIdPendiente = null;
+
+        // Abre el modal de advertencia y guarda el ID a eliminar.
+        function showDeleteModal(rolId, rolNombre) {
+            _rolIdPendiente = rolId;
+            const span = document.getElementById('delRolNombre');
+            if (span) span.textContent = rolNombre;
+            document.getElementById('modalDelete').classList.add('show');
+        }
+
+        // Cierra el modal de advertencia sin hacer nada.
+        function hideDeleteModal() {
+            document.getElementById('modalDelete').classList.remove('show');
+            _rolIdPendiente = null;
+        }
+
+        // Transfiere el ID al input oculto y envía el formulario de borrado.
+        function confirmDelete() {
+            if (!_rolIdPendiente) return;
+            document.getElementById('inputDeleteId').value = _rolIdPendiente;
+            document.getElementById('formDelete').submit();
+        }
+
+        // ── Modal genérico éxito / error ────────────────────────────
+        // Se llama desde código C# si se requiere mostrar un modal
+        // en lugar de la etiqueta inline.
+        function showResultModal(type, title, message) {
+            const overlay = document.getElementById('modalResult');
+            if (!overlay) return;
+
+            // Aplica la clase de color al ícono
+            const icon = document.getElementById('resultIcon');
+            icon.className = 'modal-icon modal-icon-' + type; // 'success' | 'error'
+
+            document.getElementById('resultTitle').textContent = title;
+            document.getElementById('resultMsg').textContent = message;
+            overlay.classList.add('show');
+        }
+
+        function hideResultModal() {
+            const overlay = document.getElementById('modalResult');
+            if (overlay) overlay.classList.remove('show');
+        }
+
+        // ── Validación en tiempo real de NombreRol ───────────────────
+        // Elimina cualquier carácter que no sea letra (incluyendo
+        // español: ñ, tildes) o espacio mientras el usuario escribe.
+        function validarNombreRol(input) {
+            const permitidos = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]*$/;
+            if (!permitidos.test(input.value)) {
+                input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
+            }
+        }
+
+        // ── Checklist de pantallas ───────────────────────────────────
+        // Añade o quita la clase visual "is-checked" al hacer clic.
+        function togglePantalla(checkbox) {
+            const item = checkbox.closest('.pantalla-item');
+            if (item) item.classList.toggle('is-checked', checkbox.checked);
+        }
+
+        // ── Inicialización ───────────────────────────────────────────
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // En la página Edit, marcar visualmente los checks que ya vienen activos.
+            document.querySelectorAll('.pantalla-item input[type="checkbox"]').forEach(cb => {
+                if (cb.checked) {
+                    cb.closest('.pantalla-item')?.classList.add('is-checked');
+                }
+            });
+
+            // Cerrar cualquier modal al hacer clic en el fondo oscuro (fuera de la caja).
+            document.querySelectorAll('.modal-bg').forEach(overlay => {
+                overlay.addEventListener('click', e => {
+                    if (e.target === overlay) overlay.classList.remove('show');
+                });
+            });
+        });
+    </script>
 }
