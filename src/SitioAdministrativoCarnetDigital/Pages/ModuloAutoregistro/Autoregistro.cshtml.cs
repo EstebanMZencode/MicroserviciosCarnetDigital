@@ -8,13 +8,12 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
     {
         private readonly IAutoregistroApiClient _autoregistroApi;
 
-        // GUIDs internos — nunca expuestos en la UI
+        // GUIDs internos - nunca expuestos en la UI
         private static readonly Guid InstitucionCUC = Guid.Parse("795271E3-0063-F111-947E-E5709BBC83CF");
         private static readonly Guid RolEstudiante = Guid.Parse("98F95770-C621-43D5-A19C-F823DA457660");
         private static readonly Guid RolFuncionario = Guid.Parse("67E33ED5-748B-4742-8948-DE86FA461A90");
         private static readonly Guid TipoUsuarioEstudiante = Guid.Parse("0B4D7DA0-1438-436C-B2D4-2D3A8F3005E7");
 
-        // Campos del formulario
         [BindProperty] public string Email { get; set; } = string.Empty;
         [BindProperty] public string TipoIdentID { get; set; } = string.Empty;
         [BindProperty] public string Identificacion { get; set; } = string.Empty;
@@ -26,7 +25,6 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
         [BindProperty] public List<string> AreasTrabajoIDs { get; set; } = new();
         [BindProperty] public string Telefonos { get; set; } = string.Empty;
 
-        // Estado de la vista
         public string? MensajeExito { get; private set; }
         public string? MensajeError { get; private set; }
         public bool RegistroExitoso { get; private set; }
@@ -36,16 +34,13 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
             _autoregistroApi = autoregistroApi;
         }
 
-        // GET normal — muestra el formulario vacío
         public void OnGet() { }
 
-        // GET /ModuloAutoregistro/Autoregistro?handler=Confirmar&token=xxx
-        // Invocado desde el enlace del correo de confirmación
         public async Task OnGetConfirmarAsync(string token)
         {
             if (string.IsNullOrWhiteSpace(token))
             {
-                MensajeError = "El enlace de confirmación no es válido.";
+                MensajeError = "El enlace de confirmacion no es valido.";
                 return;
             }
 
@@ -53,7 +48,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
 
             if (result.Success)
             {
-                MensajeExito = result.Data?.Message ?? "Cuenta confirmada. Ya podés iniciar sesión.";
+                MensajeExito = result.Data?.Message ?? "Cuenta confirmada. Ya podes iniciar sesion.";
                 RegistroExitoso = true;
             }
             else
@@ -62,10 +57,8 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
             }
         }
 
-        // POST — envía el formulario al microservicio
         public async Task<IActionResult> OnPostAsync()
         {
-            // Validaciones del lado web antes de llamar al microservicio
             if (string.IsNullOrWhiteSpace(Email))
             { MensajeError = "El email es obligatorio."; return Page(); }
 
@@ -73,21 +66,20 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
             { MensajeError = "El nombre completo es obligatorio."; return Page(); }
 
             if (string.IsNullOrWhiteSpace(Identificacion))
-            { MensajeError = "La identificación es obligatoria."; return Page(); }
+            { MensajeError = "La identificacion es obligatoria."; return Page(); }
 
             if (string.IsNullOrWhiteSpace(TipoIdentID) || !Guid.TryParse(TipoIdentID, out var tipoIdentGuid))
-            { MensajeError = "Debe seleccionar un tipo de identificación."; return Page(); }
+            { MensajeError = "Debe seleccionar un tipo de identificacion."; return Page(); }
 
             if (string.IsNullOrWhiteSpace(TipoUsuarioID) || !Guid.TryParse(TipoUsuarioID, out var tipoUsuarioGuid))
             { MensajeError = "Debe seleccionar un tipo de usuario."; return Page(); }
 
             if (string.IsNullOrWhiteSpace(Contrasena))
-            { MensajeError = "La contraseña es obligatoria."; return Page(); }
+            { MensajeError = "La contrasena es obligatoria."; return Page(); }
 
             if (Contrasena != ConfContrasena)
-            { MensajeError = "Las contraseñas no coinciden."; return Page(); }
+            { MensajeError = "Las contrasenas no coinciden."; return Page(); }
 
-            // Validar dominio del correo según tipo de usuario
             bool esEstudiante = tipoUsuarioGuid == TipoUsuarioEstudiante;
             string dominioEsperado = esEstudiante ? "cuc.cr" : "cuc.ac.cr";
             string emailLower = Email.Trim().ToLower();
@@ -101,28 +93,24 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
                 return Page();
             }
 
-            // Validar selección mínima según tipo
             if (esEstudiante && CarrerasIDs.Count == 0)
             { MensajeError = "Debe seleccionar al menos una carrera."; return Page(); }
 
             if (!esEstudiante && AreasTrabajoIDs.Count == 0)
-            { MensajeError = "Debe seleccionar al menos un área de trabajo."; return Page(); }
+            { MensajeError = "Debe seleccionar al menos un area de trabajo."; return Page(); }
 
-            // Determinar rol (interno, nunca visible al usuario)
             var rolGuid = esEstudiante ? RolEstudiante : RolFuncionario;
 
-            // Parsear GUIDs de carreras y áreas
             var carrerasGuids = CarrerasIDs
                 .Where(id => Guid.TryParse(id, out _))
-                .Select(id => Guid.Parse(id))
+                .Select(Guid.Parse)
                 .ToList();
 
             var areasGuids = AreasTrabajoIDs
                 .Where(id => Guid.TryParse(id, out _))
-                .Select(id => Guid.Parse(id))
+                .Select(Guid.Parse)
                 .ToList();
 
-            // Parsear teléfonos separados por coma
             var telefonosList = string.IsNullOrWhiteSpace(Telefonos)
                 ? new List<string>()
                 : Telefonos.Split(',')
@@ -130,7 +118,10 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
                            .Where(t => !string.IsNullOrEmpty(t))
                            .ToList();
 
-            // Fecha de vencimiento: un año desde hoy (automático, no visible al usuario)
+            // Fecha solo-fecha (yyyy-MM-dd) para coincidir con el formato que
+            // acepta el microservicio, evitando problemas con microsegundos en SQL Server.
+            var fechaVencimiento = DateTime.UtcNow.AddYears(1).Date;
+
             var request = new UsuarioRegistroRequest
             {
                 TipoIdentID = tipoIdentGuid,
@@ -141,7 +132,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
                 InstitucionID = InstitucionCUC,
                 TipoUsuarioID = tipoUsuarioGuid,
                 RolID = rolGuid,
-                FechaVencimientoCarnet = DateTime.UtcNow.AddYears(1),
+                FechaVencimientoCarnet = fechaVencimiento,
                 CarrerasIDs = esEstudiante ? carrerasGuids : new(),
                 AreasTrabajoIDs = esEstudiante ? new() : areasGuids,
                 Telefonos = telefonosList
@@ -151,7 +142,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
 
             if (result.Success)
             {
-                MensajeExito = result.Data?.Message ?? "Registro exitoso. Revisá tu email para confirmar tu cuenta.";
+                MensajeExito = result.Data?.Message ?? "Registro exitoso. Revisa tu email para confirmar tu cuenta.";
                 RegistroExitoso = true;
             }
             else
@@ -163,5 +154,6 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro
         }
     }
 }
+
 
 
