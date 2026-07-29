@@ -62,7 +62,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAuth
             var intentos = HttpContext.Session.GetInt32(SessionKeyIntentos) ?? 0;
             if (intentos >= MaxIntentosFallidos)
             {
-                AlertMessage = "Por motivos de seguridad, el usuario ha sido bloqueado. Contacte al administrador.";
+                AlertMessage = "Ha ocurrido un error. Contacte al administrador.";
                 return Page();
             }
 

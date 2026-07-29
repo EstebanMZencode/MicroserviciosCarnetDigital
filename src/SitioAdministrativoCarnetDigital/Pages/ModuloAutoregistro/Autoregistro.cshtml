@@ -1,8 +1,588 @@
-﻿@page
+@page
 @model SitioAdministrativoCarnetDigital.Pages.ModuloAutoregistro.AutoregistroModel
 @{
-    ViewData["Title"] = "Autoregistro";
-    ViewData["Section"] = "Autoregistro";
+    Layout = null; // Página standalone igual que Login — fondo azul propio
 }
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex, nofollow" />
+    <title>Registro — Carnet Digital CUC</title>
+    <style>
+        /* ── Reset & base ─────────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-<!-- Esta página va afuera, al mismo nivel de login -->
+        body {
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0d1b6e 0%, #1a237e 30%, #3949ab 70%, #283593 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 24px 16px;
+        }
+
+        /* ── Tarjeta central ──────────────────────────────────────────────── */
+        .reg-card {
+            background: #fff;
+            border-radius: 20px;
+            box-shadow: 0 24px 64px rgba(0,0,0,.28);
+            padding: 40px 40px 36px;
+            width: 100%;
+            max-width: 560px;
+            animation: cardIn .25s ease;
+        }
+
+        @keyframes cardIn {
+            from { opacity:0; transform: translateY(12px); }
+            to   { opacity:1; transform: translateY(0);    }
+        }
+
+        /* ── Marca ────────────────────────────────────────────────────────── */
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            justify-content: center;
+            margin-bottom: 28px;
+        }
+
+        .brand-logo {
+            width: 52px; height: 52px;
+            background: #1a237e;
+            border-radius: 14px;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; flex-shrink: 0;
+            box-shadow: 0 4px 14px rgba(26,35,126,.35);
+        }
+
+        .brand-text h1 {
+            font-size: 1.2rem; font-weight: 700;
+            color: #1a237e; line-height: 1.2; margin: 0;
+        }
+
+        .brand-text small {
+            font-size: .75rem; color: #6b7280; display: block; margin-top: 1px;
+        }
+
+        /* ── Alertas ──────────────────────────────────────────────────────── */
+        .alert {
+            padding: 11px 14px;
+            border-radius: 8px;
+            margin-bottom: 18px;
+            font-size: .85rem;
+            line-height: 1.45;
+        }
+
+        .alert-success {
+            background: #dcfce7; color: #166534; border: 1px solid #bbf7d0;
+        }
+
+        .alert-error {
+            background: #fee2e2; color: #991b1b; border: 1px solid #fecaca;
+        }
+
+        /* ── Grid de 2 columnas para el form ─────────────────────────────── */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px 18px;
+        }
+
+        .form-grid .span-2 { grid-column: span 2; }
+
+        /* ── Grupos de campo ──────────────────────────────────────────────── */
+        .form-group { display: flex; flex-direction: column; gap: 5px; }
+
+        .form-label {
+            font-size: .8rem; font-weight: 500; color: #374151;
+        }
+
+        .form-label .req { color: #ef4444; margin-left: 2px; }
+
+        /* font-size 16px evita zoom en iOS */
+        .form-control {
+            padding: 9px 12px;
+            font-size: 16px;
+            color: #111827;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 9px;
+            background: #fff;
+            transition: border-color .15s, box-shadow .15s;
+            -webkit-appearance: none;
+            appearance: none;
+            width: 100%;
+        }
+
+        .form-control::placeholder { color: #9ca3af; }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3f51b5;
+            box-shadow: 0 0 0 3px rgba(63,81,181,.13);
+        }
+
+        select.form-control { cursor: pointer; }
+
+        /* ── Sección dinámica (carreras / áreas) ──────────────────────────── */
+        .seccion-dinamica { display: none; }
+        .seccion-dinamica.visible { display: block; }
+
+        /* ── Checkboxes de carrera / área ─────────────────────────────────── */
+        .checks-label {
+            font-size: .8rem; font-weight: 500;
+            color: #374151; margin-bottom: 8px;
+            display: block;
+        }
+
+        .checks-label .req { color: #ef4444; }
+
+        .checks-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .check-item {
+            display: flex; align-items: center; gap: 8px;
+            padding: 8px 10px;
+            border: 1.5px solid #e5e7eb;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: border-color .15s, background .15s;
+            user-select: none;
+        }
+
+        .check-item:hover { border-color: #3f51b5; background: #f0f1fc; }
+        .check-item.checked { border-color: #3f51b5; background: #eef0fb; }
+
+        .check-item input[type="checkbox"] {
+            accent-color: #3f51b5;
+            width: 15px; height: 15px;
+            cursor: pointer; flex-shrink: 0;
+        }
+
+        .check-item label {
+            font-size: .8rem; color: #374151; cursor: pointer; line-height: 1.3;
+        }
+
+        /* ── Botón principal ──────────────────────────────────────────────── */
+        .btn-submit {
+            display: block; width: 100%;
+            padding: 13px;
+            background: #3f51b5; color: #fff;
+            border: none; border-radius: 10px;
+            font-size: 1rem; font-weight: 600;
+            cursor: pointer; margin-top: 6px;
+            transition: background .15s, transform .1s, opacity .15s;
+        }
+
+        .btn-submit:hover    { background: #3449a0; }
+        .btn-submit:active   { transform: scale(.985); }
+        .btn-submit:disabled { opacity: .65; cursor: not-allowed; }
+
+        /* ── Enlace de login ──────────────────────────────────────────────── */
+        .login-row {
+            text-align: center;
+            margin-top: 18px;
+            font-size: .875rem;
+            color: #6b7280;
+        }
+
+        .login-row a {
+            color: #3f51b5; font-weight: 600; text-decoration: none;
+        }
+
+        .login-row a:hover { text-decoration: underline; }
+
+        /* ── Panel de éxito (reemplaza el form) ─────────────────────────── */
+        .success-panel {
+            text-align: center;
+            padding: 16px 0 8px;
+        }
+
+        .success-icon {
+            font-size: 52px;
+            margin-bottom: 14px;
+            display: block;
+        }
+
+        .success-title {
+            font-size: 1.15rem; font-weight: 700;
+            color: #1a237e; margin-bottom: 10px;
+        }
+
+        .success-msg {
+            font-size: .9rem; color: #374151;
+            line-height: 1.55; margin-bottom: 22px;
+        }
+
+        /* ── Responsive ───────────────────────────────────────────────────── */
+        @@media (max-width: 520px) {
+            .reg-card { padding: 28px 18px 24px; border-radius: 16px; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-grid .span-2 { grid-column: span 1; }
+            .checks-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="reg-card">
+
+    @* ── Marca ────────────────────────────────────────────────────────── *@
+    <div class="brand">
+        <div class="brand-logo">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none"
+                 stroke="currentColor" stroke-width="2"
+                 stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="5" width="18" height="14" rx="2"/>
+                <circle cx="9" cy="10" r="2"/>
+                <path d="M15 8h2"/>
+                <path d="M15 12h2"/>
+                <path d="M7 15h10"/>
+            </svg>
+        </div>
+        <div class="brand-text">
+            <h1>Carnet Digital</h1>
+            <small>Colegio Universitario de Cartago</small>
+        </div>
+    </div>
+
+    @* ── Mensaje de éxito de confirmación de cuenta ─────────────────── *@
+    @if (Model.RegistroExitoso && !string.IsNullOrEmpty(Model.MensajeExito)
+         && Request.Query.ContainsKey("handler"))
+    {
+        @* Confirmación de cuenta desde el enlace del correo *@
+        <div class="success-panel">
+            <span class="success-icon">✅</span>
+            <div class="success-title">¡Cuenta confirmada!</div>
+            <div class="success-msg">@Model.MensajeExito</div>
+            <a href="/ModuloAuth/Login" class="btn-submit" style="display:inline-block;width:auto;padding:12px 28px;text-decoration:none;">
+                Iniciar sesión
+            </a>
+        </div>
+    }
+    else if (Model.RegistroExitoso)
+    {
+        @* Registro exitoso — mostrar mensaje y ocultar form *@
+        <div class="success-panel">
+            <span class="success-icon">📧</span>
+            <div class="success-title">¡Registro enviado!</div>
+            <div class="success-msg">@Model.MensajeExito</div>
+            <a href="/ModuloAuth/Login" class="btn-submit" style="display:inline-block;width:auto;padding:12px 28px;text-decoration:none;">
+                Ir al inicio de sesión
+            </a>
+        </div>
+    }
+    else
+    {
+        @* ── Formulario de registro ──────────────────────────────────── *@
+
+        @if (!string.IsNullOrEmpty(Model.MensajeError))
+        {
+            <div class="alert alert-error">@Model.MensajeError</div>
+        }
+
+        <form method="post" id="formRegistro" novalidate>
+            @Html.AntiForgeryToken()
+
+            <div class="form-grid">
+
+                @* Tipo de usuario — define el dominio y las secciones visibles *@
+                <div class="form-group span-2">
+                    <label class="form-label" for="TipoUsuarioID">
+                        Tipo de usuario <span class="req">*</span>
+                    </label>
+                    <select id="TipoUsuarioID" name="TipoUsuarioID"
+                            class="form-control" onchange="onTipoUsuarioCambio(this.value)" required>
+                        <option value="">Seleccione...</option>
+                        <option value="0B4D7DA0-1438-436C-B2D4-2D3A8F3005E7"
+                                @(Model.TipoUsuarioID == "0B4D7DA0-1438-436C-B2D4-2D3A8F3005E7" ? "selected" : "")>
+                            Estudiante
+                        </option>
+                        <option value="A4CB240E-5115-45BE-B9CE-43DE7F8E6862"
+                                @(Model.TipoUsuarioID == "A4CB240E-5115-45BE-B9CE-43DE7F8E6862" ? "selected" : "")>
+                            Funcionario
+                        </option>
+                    </select>
+                </div>
+
+                @* Email — placeholder cambia según tipo *@
+                <div class="form-group span-2">
+                    <label class="form-label" for="Email">
+                        Email institucional <span class="req">*</span>
+                    </label>
+                    <input type="email" id="Email" name="Email"
+                           class="form-control"
+                           placeholder="usuario@cuc.cr"
+                           value="@Model.Email"
+                           autocomplete="email" required />
+                </div>
+
+                @* Nombre completo *@
+                <div class="form-group span-2">
+                    <label class="form-label" for="NombreCompleto">
+                        Nombre completo <span class="req">*</span>
+                    </label>
+                    <input type="text" id="NombreCompleto" name="NombreCompleto"
+                           class="form-control"
+                           placeholder="Juan Pérez González"
+                           value="@Model.NombreCompleto"
+                           autocomplete="name" required />
+                </div>
+
+                @* Tipo de identificación *@
+                <div class="form-group">
+                    <label class="form-label" for="TipoIdentID">
+                        Tipo de identificación <span class="req">*</span>
+                    </label>
+                    <select id="TipoIdentID" name="TipoIdentID" class="form-control" required>
+                        <option value="">Seleccione...</option>
+                        <option value="C34F39C9-456B-458D-B50E-C8AB622B41FC"
+                                @(Model.TipoIdentID == "C34F39C9-456B-458D-B50E-C8AB622B41FC" ? "selected" : "")>
+                            Cédula de Identidad
+                        </option>
+                        <option value="E20AC31C-9329-4FA0-89EB-6515EF916519"
+                                @(Model.TipoIdentID == "E20AC31C-9329-4FA0-89EB-6515EF916519" ? "selected" : "")>
+                            Cédula de Residencia
+                        </option>
+                    </select>
+                </div>
+
+                @* Número de identificación *@
+                <div class="form-group">
+                    <label class="form-label" for="Identificacion">
+                        Identificación <span class="req">*</span>
+                    </label>
+                    <input type="text" id="Identificacion" name="Identificacion"
+                           class="form-control"
+                           placeholder="1-2345-6789"
+                           value="@Model.Identificacion"
+                           autocomplete="off" required />
+                </div>
+
+                @* Contraseña *@
+                <div class="form-group">
+                    <label class="form-label" for="Contrasena">
+                        Contraseña <span class="req">*</span>
+                    </label>
+                    <input type="password" id="Contrasena" name="Contrasena"
+                           class="form-control"
+                           placeholder="••••••••"
+                           autocomplete="new-password" required />
+                </div>
+
+                @* Confirmar contraseña *@
+                <div class="form-group">
+                    <label class="form-label" for="ConfContrasena">
+                        Confirmar contraseña <span class="req">*</span>
+                    </label>
+                    <input type="password" id="ConfContrasena" name="ConfContrasena"
+                           class="form-control"
+                           placeholder="••••••••"
+                           autocomplete="new-password" required />
+                </div>
+
+                @* Teléfonos (opcional, separados por coma) *@
+                <div class="form-group span-2">
+                    <label class="form-label" for="Telefonos">
+                        Teléfonos <span style="color:#9ca3af;font-weight:400;">(opcional — separar por coma)</span>
+                    </label>
+                    <input type="text" id="Telefonos" name="Telefonos"
+                           class="form-control"
+                           placeholder="88881234, 77779999"
+                           value="@Model.Telefonos"
+                           autocomplete="tel" />
+                </div>
+
+                @* ── Sección Carreras (solo Estudiantes) ───────────────── *@
+                <div class="form-group span-2 seccion-dinamica" id="seccionCarreras">
+                    <span class="checks-label">
+                        Carreras <span class="req">*</span>
+                    </span>
+                    <div class="checks-grid">
+                        @{
+                            var carrerasOpciones = new[]
+                            {
+                                ("1D1278F9-ADC8-49DD-98CD-D8C806DE7280", "Tecnologías de la Información"),
+                                ("C54D2756-FD80-46D1-A8D0-C709D3979D33", "Dirección y Administración de Empresas"),
+                                ("5F7B0B63-CA31-4746-999C-0597A4A3B9F0", "Electrónica")
+                            };
+                        }
+                        @foreach (var (valor, nombre) in carrerasOpciones)
+                        {
+                            var marcado = Model.CarrerasIDs.Contains(valor);
+                            <div class="check-item @(marcado ? "checked" : "")">
+                                <input type="checkbox"
+                                       name="CarrerasIDs"
+                                       value="@valor"
+                                       id="carrera_@valor"
+                                       @(marcado ? "checked" : "")
+                                       onchange="toggleCheck(this)" />
+                                <label for="carrera_@valor">@nombre</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+                @* ── Sección Áreas de Trabajo (solo Funcionarios) ──────── *@
+                <div class="form-group span-2 seccion-dinamica" id="seccionAreas">
+                    <span class="checks-label">
+                        Áreas de trabajo <span class="req">*</span>
+                    </span>
+                    <div class="checks-grid">
+                        @{
+                            var areasOpciones = new[]
+                            {
+                                ("70D5A7C0-D855-4D19-89D5-1C57381B8085", "TI"),
+                                ("FF5B57B1-9A44-4538-A045-7361E190E41B", "Seguridad"),
+                                ("374445E9-A149-45B2-8AE8-D99DD44BF89B", "Conserje"),
+                                ("DF1FBC2A-F9EC-46E8-8F63-EEEC4A1042A2", "Psicología")
+                            };
+                        }
+                        @foreach (var (valor, nombre) in areasOpciones)
+                        {
+                            var marcado = Model.AreasTrabajoIDs.Contains(valor);
+                            <div class="check-item @(marcado ? "checked" : "")">
+                                <input type="checkbox"
+                                       name="AreasTrabajoIDs"
+                                       value="@valor"
+                                       id="area_@valor"
+                                       @(marcado ? "checked" : "")
+                                       onchange="toggleCheck(this)" />
+                                <label for="area_@valor">@nombre</label>
+                            </div>
+                        }
+                    </div>
+                </div>
+
+            </div>@* /form-grid *@
+
+            <button type="submit" class="btn-submit" id="btnRegistrar">
+                Registrarme
+            </button>
+        </form>
+
+        <div class="login-row">
+            ¿Ya tenés cuenta?
+            <a href="/ModuloAuth/Login">Iniciar sesión</a>
+        </div>
+    }
+
+</div>@* /reg-card *@
+
+<script>
+    // ── Constantes de tipo de usuario ─────────────────────────────────────
+    const ESTUDIANTE = '0B4D7DA0-1438-436C-B2D4-2D3A8F3005E7';
+    const FUNCIONARIO = 'A4CB240E-5115-45BE-B9CE-43DE7F8E6862';
+
+    // ── Actualiza placeholder del email y secciones visibles ─────────────
+    function onTipoUsuarioCambio(valor) {
+        const emailInput      = document.getElementById('Email');
+        const secCarreras     = document.getElementById('seccionCarreras');
+        const secAreas        = document.getElementById('seccionAreas');
+
+        if (valor === ESTUDIANTE) {
+            emailInput.placeholder = 'usuario@cuc.cr';
+            secCarreras.classList.add('visible');
+            secAreas.classList.remove('visible');
+            // Desmarcar áreas al cambiar a estudiante
+            document.querySelectorAll('#seccionAreas input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+                cb.closest('.check-item')?.classList.remove('checked');
+            });
+        } else if (valor === FUNCIONARIO) {
+            emailInput.placeholder = 'usuario@cuc.ac.cr';
+            secAreas.classList.add('visible');
+            secCarreras.classList.remove('visible');
+            // Desmarcar carreras al cambiar a funcionario
+            document.querySelectorAll('#seccionCarreras input[type="checkbox"]').forEach(cb => {
+                cb.checked = false;
+                cb.closest('.check-item')?.classList.remove('checked');
+            });
+        } else {
+            emailInput.placeholder = 'usuario@cuc.cr';
+            secCarreras.classList.remove('visible');
+            secAreas.classList.remove('visible');
+        }
+    }
+
+    // ── Toggle visual de checkboxes ──────────────────────────────────────
+    function toggleCheck(checkbox) {
+        const item = checkbox.closest('.check-item');
+        if (item) item.classList.toggle('checked', checkbox.checked);
+    }
+
+    // ── Validación cliente antes de enviar ───────────────────────────────
+    document.getElementById('formRegistro')?.addEventListener('submit', function (e) {
+        const tipoUsuario = document.getElementById('TipoUsuarioID').value;
+        const email       = document.getElementById('Email').value.trim().toLowerCase();
+        const pass        = document.getElementById('Contrasena').value;
+        const confPass    = document.getElementById('ConfContrasena').value;
+        const btn         = document.getElementById('btnRegistrar');
+
+        if (!tipoUsuario) {
+            e.preventDefault();
+            alert('Debe seleccionar un tipo de usuario.');
+            return;
+        }
+
+        // Validar dominio del correo
+        const dominioEsperado = tipoUsuario === ESTUDIANTE ? 'cuc.cr' : 'cuc.ac.cr';
+        const parteDominio    = email.includes('@') ? email.split('@').pop() : '';
+        if (parteDominio !== dominioEsperado) {
+            e.preventDefault();
+            alert(`El correo debe ser del dominio @${dominioEsperado} para este tipo de usuario.`);
+            return;
+        }
+
+        // Validar contraseñas coinciden
+        if (pass !== confPass) {
+            e.preventDefault();
+            alert('Las contraseñas no coinciden.');
+            return;
+        }
+
+        // Validar selección mínima de carrera / área
+        if (tipoUsuario === ESTUDIANTE) {
+            const carrerasMarcadas = document.querySelectorAll(
+                '#seccionCarreras input[type="checkbox"]:checked');
+            if (carrerasMarcadas.length === 0) {
+                e.preventDefault();
+                alert('Debe seleccionar al menos una carrera.');
+                return;
+            }
+        } else {
+            const areasMarcadas = document.querySelectorAll(
+                '#seccionAreas input[type="checkbox"]:checked');
+            if (areasMarcadas.length === 0) {
+                e.preventDefault();
+                alert('Debe seleccionar al menos un área de trabajo.');
+                return;
+            }
+        }
+
+        // Deshabilitar botón mientras procesa
+        btn.disabled    = true;
+        btn.textContent = 'Enviando...';
+    });
+
+    // ── Inicialización: restaurar estado tras un POST con error ──────────
+    document.addEventListener('DOMContentLoaded', () => {
+        const tipoSelect = document.getElementById('TipoUsuarioID');
+        if (tipoSelect && tipoSelect.value) {
+            onTipoUsuarioCambio(tipoSelect.value);
+        }
+
+        // Re-marcar visualmente los checkboxes que vengan marcados del PageModel
+        document.querySelectorAll('.check-item input[type="checkbox"]').forEach(cb => {
+            if (cb.checked) cb.closest('.check-item')?.classList.add('checked');
+        });
+    });
+</script>
+
+</body>
+</html>
