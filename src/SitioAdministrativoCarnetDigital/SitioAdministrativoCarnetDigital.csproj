@@ -5,13 +5,4 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
-
-  <ItemGroup>
-    <Compile Remove="Pages\ModuloAutoregistro\Autoregistro.cshtml.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Content Remove="Pages\ModuloAutoregistro\Autoregistro.cshtml" />
-  </ItemGroup>
-
 </Project>
