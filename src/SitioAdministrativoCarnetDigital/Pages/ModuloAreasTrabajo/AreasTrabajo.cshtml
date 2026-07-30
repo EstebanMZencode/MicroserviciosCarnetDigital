@@ -1,6 +1,7 @@
 ﻿@page
 @model SitioAdministrativoCarnetDigital.Pages.ModuloAreasTrabajo.AreasTrabajoModel
 @{
+    Layout = "_Layout";
     ViewData["Title"] = "Áreas de Trabajo";
     ViewData["Section"] = "Administración de Áreas de Trabajo";
 }
@@ -193,7 +194,6 @@
     </table>
 </div>
 
-<!-- Modal Crear/Editar -->
 <div class="modal-overlay" id="modalArea">
     <div class="modal">
         <div class="modal-header">
@@ -218,7 +218,6 @@
     </div>
 </div>
 
-<!-- Modal Confirmar Eliminar -->
 <div class="modal-overlay" id="modalEliminar">
     <div class="modal modal-sm">
         <div class="modal-header">
@@ -244,7 +243,6 @@
         document.getElementById('InstitucionID').value = '';
         document.getElementById('modalArea').classList.add('active');
     }
-
     function abrirModalEditar(id, nombre, institucionId) {
         document.getElementById('modalTitulo').innerText = 'Editar Área de Trabajo';
         document.getElementById('AreaTrabID').value = id;
@@ -252,18 +250,11 @@
         document.getElementById('InstitucionID').value = institucionId;
         document.getElementById('modalArea').classList.add('active');
     }
-
-    function cerrarModal() {
-        document.getElementById('modalArea').classList.remove('active');
-    }
-
+    function cerrarModal() { document.getElementById('modalArea').classList.remove('active'); }
     function confirmarEliminar(id, nombre) {
         document.getElementById('EliminarID').value = id;
         document.getElementById('mensajeEliminar').innerText = `¿Realmente desea eliminar el área "${nombre}"?`;
         document.getElementById('modalEliminar').classList.add('active');
     }
-
-    function cerrarModalEliminar() {
-        document.getElementById('modalEliminar').classList.remove('active');
-    }
-</script> 
+    function cerrarModalEliminar() { document.getElementById('modalEliminar').classList.remove('active'); }
+</script>

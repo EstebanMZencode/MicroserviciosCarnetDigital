@@ -1,6 +1,7 @@
 ﻿@page
 @model SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones.InstitucionesModel
 @{
+    Layout = "_Layout";
     ViewData["Title"] = "Instituciones";
     ViewData["Section"] = "Administración de Instituciones";
 }
@@ -197,7 +198,6 @@
     </table>
 </div>
 
-<!-- Modal Crear/Editar -->
 <div class="modal-overlay" id="modalInstitucion">
     <div class="modal">
         <div class="modal-header">
@@ -230,7 +230,6 @@
     </div>
 </div>
 
-<!-- Modal Confirmar Eliminar -->
 <div class="modal-overlay" id="modalEliminar">
     <div class="modal modal-sm">
         <div class="modal-header">
@@ -258,7 +257,6 @@
         document.getElementById('Dominios').value = '';
         document.getElementById('modalInstitucion').classList.add('active');
     }
-
     function abrirModalEditar(id, nombre, email, telefono, dominios) {
         document.getElementById('modalTitulo').innerText = 'Editar Institución';
         document.getElementById('InstitucionID').value = id;
@@ -268,18 +266,11 @@
         document.getElementById('Dominios').value = dominios;
         document.getElementById('modalInstitucion').classList.add('active');
     }
-
-    function cerrarModal() {
-        document.getElementById('modalInstitucion').classList.remove('active');
-    }
-
+    function cerrarModal() { document.getElementById('modalInstitucion').classList.remove('active'); }
     function confirmarEliminar(id, nombre) {
         document.getElementById('EliminarID').value = id;
         document.getElementById('mensajeEliminar').innerText = `¿Realmente desea eliminar la institución "${nombre}"?`;
         document.getElementById('modalEliminar').classList.add('active');
     }
-
-    function cerrarModalEliminar() {
-        document.getElementById('modalEliminar').classList.remove('active');
-    }
-</script> 
+    function cerrarModalEliminar() { document.getElementById('modalEliminar').classList.remove('active'); }
+</script>

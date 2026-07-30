@@ -29,6 +29,10 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloCarreras
             var token = HttpContext.Session.GetString("JwtToken");
             if (!string.IsNullOrEmpty(token))
                 _carrerasApi.SetToken(token);
+            var email = HttpContext.Session.GetString("UserEmail") ?? "Usuario";
+            ViewData["UserName"] = email;
+            ViewData["UserRole"] = "Administrador";
+            ViewData["UserInitials"] = email.Length > 0 ? email[0].ToString().ToUpper() : "U";
         }
 
         public async Task OnGetAsync()
