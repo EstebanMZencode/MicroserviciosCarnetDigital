@@ -15,6 +15,7 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAuth
         private const string SessionKeyEmail = "UserEmail";
         private const string SessionKeyRefresh = "RefreshToken";
         private const string SessionKeyIntentos = "FailedAttempts";
+        private const string SessionKeyExpiracion = "TokenExpiracion";
 
         [BindProperty] public string Usuario { get; set; } = string.Empty;
         [BindProperty] public string Contrasena { get; set; } = string.Empty;
@@ -78,8 +79,10 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAuth
                 // Login correcto: reiniciar contador y guardar tokens en Session.
                 HttpContext.Session.Remove(SessionKeyIntentos);
                 HttpContext.Session.SetString(SessionKeyToken, result.Data.AccessToken);
-                HttpContext.Session.SetString(SessionKeyEmail, result.Data.UsuarioID);   // campo real: usuarioID
+                HttpContext.Session.SetString(SessionKeyEmail, Usuario.Trim()); // email real del formulario
                 HttpContext.Session.SetString(SessionKeyRefresh, result.Data.RefreshToken);
+                // Guardar fecha de expiración para que el middleware de refresh sepa cuándo renovar
+                HttpContext.Session.SetString(SessionKeyExpiracion, result.Data.ExpiresIn.ToString("O"));
 
                 // Serializar la respuesta completa para que Login.js la guarde en localStorage.
                 // El script cliente ejecuta storeLoginData() y luego redirige al Index.
@@ -112,5 +115,4 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloAuth
         }
     }
 }
-
 

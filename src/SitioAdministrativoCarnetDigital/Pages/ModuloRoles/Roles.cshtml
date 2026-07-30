@@ -2,591 +2,323 @@
 @model SitioAdministrativoCarnetDigital.Pages.ModuloRoles.RolesModel
 @{
     ViewData["Title"] = "Roles";
-    Layout = "_Layout";
+    ViewData["Section"] = "Administración de Roles";
+    var paginaActual = Model.PaginaActual;
 }
 
-@section Styles {
-    @* CSS propio del módulo — ubicado en la misma carpeta ModuloRoles *@
-    <style>
-           
-.page-header {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    margin-bottom: 24px;
-}
-
-.page-header-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 50%;
-    background: #5c6bc0;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-}
-
-.page-header h1 {
-    font-size: 1.45rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin: 0 0 2px;
-    line-height: 1.2;
-}
-
-.page-header p {
-    font-size: 0.82rem;
-    color: #6b7280;
-    margin: 0;
-}
-
-/* ── Tarjeta contenedora ─────────────────────────────────────── */
-.r-card {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06), 0 4px 14px rgba(0,0,0,.05);
-    overflow: hidden;
-}
-
-/* Cabecera de la tarjeta: título izquierda, acción derecha */
-.r-card-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 18px 24px;
-}
-
-.r-card-title {
-    font-size: .95rem;
-    font-weight: 600;
-    color: #374151;
-}
-
-/* ── Botón "+ Nuevo" ──────────────────────────────────────────── */
-.btn-nuevo {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #5c6bc0;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 18px;
-    font-size: .875rem;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background .15s;
-}
-
-    .btn-nuevo:hover {
-        background: #4f5ba8;
-        color: #fff;
+<style>
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
     }
 
-/* ── Tabla de roles ───────────────────────────────────────────── */
-.r-table {
-    width: 100%;
-    border-collapse: collapse;
-}
-
-    .r-table thead tr {
-        border-bottom: 1px solid #e5e7eb;
-    }
-
-    .r-table th {
-        padding: 11px 24px;
-        font-size: .72rem;
+    .card-title {
+        font-size: 18px;
         font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: .06em;
-        color: #9ca3af;
-        text-align: left;
+        color: var(--text-primary);
     }
 
-    .r-table td {
-        padding: 14px 24px;
-        font-size: .88rem;
-        color: #374151;
-        border-bottom: 1px solid #f3f4f6;
-        vertical-align: middle;
+    .tabla {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 14px;
     }
 
-    .r-table tbody tr:last-child td {
-        border-bottom: none;
+        .tabla th {
+            background-color: var(--content-bg);
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--text-secondary);
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .tabla td {
+            padding: 12px;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        .tabla tr:hover {
+            background-color: var(--content-bg);
+        }
+
+    .btn-danger {
+        background-color: #ef4444;
+        color: white;
     }
 
-    .r-table tbody tr:hover {
-        background: #fafafa;
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
     }
 
-/* Celda de acciones alineada a la derecha */
-.r-actions {
-    display: flex;
-    gap: 4px;
-    justify-content: flex-end;
-}
-
-/* Botones icono (lápiz / basurero) */
-.btn-ico {
-    background: none;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    padding: 6px 7px;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    transition: border-color .15s, background .15s;
-}
-
-    .btn-ico:hover {
-        border-color: #e5e7eb;
-        background: #f9fafb;
+    .alert-success {
+        background-color: #dcfce7;
+        color: #166534;
+        border: 1px solid #bbf7d0;
     }
 
-.btn-ico-edit {
-    color: #f59e0b; /* Naranja */
-    background: transparent;
-    border: none;
-}
-
-.btn-ico-edit:hover {
-    color: #d97706; /* Naranja más oscuro */
-}
-
-.btn-ico-delete {
-    background: #dc2626;
-    color: #ffffff;
-    border: none;
-    border-radius: 6px;
-}
-
-.btn-ico-delete:hover {
-    background: #b91c1c;
-}
-
-/* ── Paginación ───────────────────────────────────────────────── */
-.r-pagination {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 14px 24px;
-    border-top: 1px solid #f3f4f6;
-}
-
-.r-pagination-info {
-    font-size: .82rem;
-    color: #6b7280;
-}
-
-.r-pagination-nums {
-    display: flex;
-    gap: 4px;
-}
-
-.btn-pag {
-    width: 32px;
-    height: 32px;
-    border-radius: 6px;
-    border: 1px solid #e5e7eb;
-    background: #fff;
-    color: #374151;
-    font-size: .82rem;
-    text-decoration: none;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background .15s;
-}
-
-    .btn-pag:hover {
-        background: #f3f4f6;
+    .alert-error {
+        background-color: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
     }
 
-    .btn-pag.pag-active {
-        background: #5c6bc0;
-        color: #fff;
-        border-color: #5c6bc0;
+    /* ── Paginación ─────────────────────────────────── */
+    .paginacion {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-top: 16px;
+        padding-top: 12px;
+        border-top: 1px solid var(--border-color);
+        font-size: 14px;
+        color: var(--text-secondary);
     }
 
-/* ── Etiquetas inline éxito / error ──────────────────────────── */
-/* Estos estilos replican exactamente los de las capturas: fondo   */
-/* salmón para error y verde-oliva para éxito, icono a la izq.    */
-.alert {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 13px 16px;
-    border-radius: 8px;
-    margin-bottom: 18px;
-    font-size: .875rem;
-    font-weight: 500;
-    line-height: 1.4;
-}
+    .paginacion-nums {
+        display: flex;
+        gap: 4px;
+        align-items: center;
+    }
+        /* Botones de número de página */
+        .paginacion-nums a.pag-num,
+        .paginacion-nums span.pag-num {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            background: #ffffff;
+            color: var(--text-primary);
+            font-size: 13px;
+            text-decoration: none;
+            transition: background .15s;
+        }
 
-    .alert svg {
-        flex-shrink: 0;
+            .paginacion-nums a.pag-num:hover {
+                background: var(--content-bg);
+            }
+
+            .paginacion-nums span.pag-num.activa {
+                background: var(--accent-color, #4f46e5);
+                color: #fff;
+                border-color: var(--accent-color, #4f46e5);
+                font-weight: 600;
+            }
+        /* Anterior / Siguiente: solo texto, igual a la imagen de referencia */
+        .paginacion-nums a.pag-nav {
+            color: var(--text-secondary);
+            font-size: 13px;
+            text-decoration: none;
+            padding: 0 4px;
+            white-space: nowrap;
+            transition: color .15s;
+        }
+
+            .paginacion-nums a.pag-nav:hover {
+                color: var(--accent-color, #4f46e5);
+            }
+
+        .paginacion-nums span.pag-nav-disabled {
+            color: #c8c8c8;
+            font-size: 13px;
+            padding: 0 4px;
+            white-space: nowrap;
+            cursor: default;
+        }
+
+    /* ── Modales ────────────────────────────────────── */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background-color: rgba(0,0,0,0.5);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
     }
 
-.alert-error {
-    background: #d9614f;
-    color: #fff;
-}
+        .modal-overlay.active {
+            display: flex;
+        }
 
-.alert-success {
-    background: #7ba428;
-    color: #fff;
-}
-
-/* ── Barra de acciones de formulario ─────────────────────────── */
-.form-actions-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 22px;
-}
-
-.btn-back {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    background: #fff;
-    color: #374151;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    padding: 9px 16px;
-    font-size: .875rem;
-    font-weight: 500;
-    text-decoration: none;
-    cursor: pointer;
-    transition: background .15s;
-}
-
-    .btn-back:hover {
-        background: #f9fafb;
-        color: #374151;
+    .modal {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        width: 100%;
+        max-width: 520px;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+        max-height: 90vh;
+        overflow-y: auto;
     }
 
-.btn-save {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    background: #5c6bc0;
-    color: #fff;
-    border: none;
-    border-radius: 8px;
-    padding: 9px 20px;
-    font-size: .875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background .15s;
-}
-
-    .btn-save:hover {
-        background: #4f5ba8;
+    .modal-sm {
+        max-width: 400px;
     }
 
-    .btn-save:disabled {
-        background: #b0b8e0;
+    .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+        .modal-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            margin: 0;
+        }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 18px;
+        cursor: pointer;
+        color: var(--text-secondary);
+        line-height: 1;
+    }
+
+    .form-group {
+        margin-bottom: 16px;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 6px;
+            color: var(--text-primary);
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        font-size: 14px;
+        outline: none;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+    }
+
+        .form-control:focus {
+            border-color: var(--accent-color);
+        }
+
+    .modal-footer {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+        margin-top: 20px;
+    }
+
+    .pantallas-label {
+        font-size: 13px;
+        font-weight: 500;
+        color: var(--text-primary);
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .pantallas-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 8px;
+    }
+
+    .pantalla-check {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        padding: 5px 7px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: var(--text-primary);
+        cursor: pointer;
+        transition: background .15s;
+    }
+
+        .pantalla-check:hover {
+            background: var(--content-bg);
+        }
+
+        .pantalla-check input[type="checkbox"] {
+            accent-color: var(--accent-color, #4f46e5);
+            width: 14px;
+            height: 14px;
+            flex-shrink: 0;
+        }
+
+    .sin-pantallas {
+        font-size: 13px;
+        color: var(--text-secondary);
+        font-style: italic;
+    }
+    /* Error dentro del modal */
+    .modal-error {
+        display: none;
+        background-color: #fee2e2;
+        color: #991b1b;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        padding: 10px 14px;
+        font-size: 13px;
+        margin-bottom: 14px;
+    }
+
+        .modal-error.visible {
+            display: block;
+        }
+    /* Spinner en el botón Guardar */
+    .btn-saving {
+        opacity: 0.7;
         cursor: not-allowed;
     }
+</style>
 
-/* ── Sección de formulario ────────────────────────────────────── */
-.form-section {
-    background: #fff;
-    border-radius: 14px;
-    box-shadow: 0 1px 3px rgba(0,0,0,.06);
-    padding: 24px;
-    margin-bottom: 16px;
-}
+<div class="page-title">Administración de Roles</div>
 
-.form-section-title {
-    font-size: .95rem;
-    font-weight: 600;
-    color: #374151;
-    margin: 0 0 20px;
-    padding-bottom: 12px;
-    border-bottom: 1px solid #f3f4f6;
-}
-
-.form-group {
-    margin-bottom: 18px;
-}
-
-.form-label {
-    display: block;
-    font-size: .875rem;
-    font-weight: 500;
-    color: #374151;
-    margin-bottom: 6px;
-}
-
-.req {
-    color: #ef4444;
-}
-
-.form-control {
-    width: 100%;
-    padding: 9px 13px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    font-size: .9rem;
-    color: #1f2937;
-    background: #fff;
-    box-sizing: border-box;
-    transition: border-color .15s, box-shadow .15s;
-}
-
-    .form-control:focus {
-        outline: none;
-        border-color: #5c6bc0;
-        box-shadow: 0 0 0 3px rgba(92,107,192,.12);
-    }
-
-    .form-control[readonly] {
-        background: #f9fafb;
-        color: #9ca3af;
-        cursor: default;
-    }
-
-/* ── Checklist de pantallas ───────────────────────────────────── */
-.pantallas-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-    gap: 10px;
-}
-
-.pantalla-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: border-color .15s, background .15s;
-    user-select: none;
-}
-
-    .pantalla-item:hover {
-        border-color: #5c6bc0;
-        background: #f5f6ff;
-    }
-
-    .pantalla-item.is-checked {
-        border-color: #5c6bc0;
-        background: #eef0fb;
-    }
-
-    .pantalla-item input[type="checkbox"] {
-        accent-color: #5c6bc0;
-        width: 16px;
-        height: 16px;
-        cursor: pointer;
-        flex-shrink: 0;
-    }
-
-    .pantalla-item label {
-        font-size: .875rem;
-        color: #374151;
-        cursor: pointer;
-        line-height: 1.4;
-    }
-
-.empty-pantallas {
-    font-size: .875rem;
-    color: #9ca3af;
-    font-style: italic;
-}
-
-/* ── Overlays / Modales ───────────────────────────────────────── */
-/* Fondo semitransparente que cubre toda la ventana */
-.modal-bg {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,.42);
-    z-index: 9990;
-    align-items: center;
-    justify-content: center;
-}
-
-    .modal-bg.show {
-        display: flex;
-    }
-
-/* Tarjeta blanca del modal */
-.modal-box {
-    background: #fff;
-    border-radius: 16px;
-    padding: 36px 32px;
-    max-width: 430px;
-    width: 90%;
-    text-align: center;
-    box-shadow: 0 20px 60px rgba(0,0,0,.18);
-    animation: popIn .18s ease;
-}
-
-/* Círculo de ícono */
-.modal-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-}
-
-.modal-icon-warn {
-    background: #fef3c7;
-    color: #f59e0b;
-}
-
-.modal-icon-success {
-    background: #dcfce7;
-    color: #22c55e;
-}
-
-.modal-icon-error {
-    background: #fee2e2;
-    color: #ef4444;
-}
-
-/* Textos del modal */
-.modal-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: #1a2744;
-    margin-bottom: 10px;
-}
-
-.modal-msg {
-    font-size: .88rem;
-    color: #6b7280;
-    line-height: 1.55;
-    margin-bottom: 28px;
-}
-
-/* Fila de botones */
-.modal-btns {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-}
-
-.btn-modal-cancel {
-    padding: 10px 24px;
-    border: 1px solid #e5e7eb;
-    border-radius: 8px;
-    background: #fff;
-    color: #374151;
-    font-size: .875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background .15s;
-}
-
-    .btn-modal-cancel:hover {
-        background: #f9fafb;
-    }
-
-/* Botón rojo de confirmación de borrado */
-.btn-modal-danger {
-    padding: 10px 24px;
-    border: none;
-    border-radius: 8px;
-    background: #ef4444;
-    color: #fff;
-    font-size: .875rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background .15s;
-}
-
-    .btn-modal-danger:hover {
-        background: #dc2626;
-    }
-
-/* Botón de cierre genérico (gris) */
-.btn-modal-close {
-    padding: 10px 28px;
-    border: 1px solid #d1d5db;
-    border-radius: 8px;
-    background: #6b7280;
-    color: #fff;
-    font-size: .875rem;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-    </style>
-}
-
-@* ── Cabecera de página ─────────────────────────────────────── *@
-<div class="page-header">
-    <div class="page-header-icon">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-             stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-        </svg>
-    </div>
-    <div>
-        <h1>Roles</h1>
-        <p>Administración de roles del sistema</p>
-    </div>
-</div>
-
-@* ── Etiqueta de éxito ──────────────────────────────────────── *@
+@* Mensajes de éxito de la página (redireccionamiento tras guardar OK) *@
 @if (!string.IsNullOrEmpty(Model.SuccessMessage))
 {
-    <div class="alert alert-success" role="alert">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" clip-rule="evenodd"
-                  d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" />
-        </svg>
-        @Model.SuccessMessage
-    </div>
+    <div class="alert alert-success">@Model.SuccessMessage</div>
 }
-
-@* ── Etiqueta de error ──────────────────────────────────────── *@
+@* Errores globales (ej: fallo al cargar roles) — los de validación van dentro del modal *@
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
-    <div class="alert alert-error" role="alert">
-        <svg width="18" height="18" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" clip-rule="evenodd"
-                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" />
-        </svg>
-        @Model.ErrorMessage
-    </div>
+    <div class="alert alert-error">@Model.ErrorMessage</div>
 }
 
-@* ── Tarjeta con tabla de roles ─────────────────────────────── *@
-<div class="r-card">
-
-    @* Encabezado: conteo + botón Nuevo *@
-    <div class="r-card-header">
-        <span class="r-card-title">Listado (@Model.TotalRegistros registros)</span>
-        <a asp-page="Create" class="btn-nuevo">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2.5">
-                <line x1="12" y1="5" x2="12" y2="19" />
-                <line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-            Nuevo
-        </a>
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Listado de Roles (@Model.TotalRegistros registros)</h2>
+        <button class="btn btn-primary" onclick="abrirModalCrear()">+ Nuevo</button>
     </div>
 
-    @* Tabla *@
-    <table class="r-table">
+    <table class="tabla">
         <thead>
             <tr>
                 <th>Nombre del Rol</th>
-                <th style="text-align:right; padding-right:30px;">Acciones</th>
+                <th>Pantallas</th>
+                <th>Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -594,31 +326,25 @@
             {
                 foreach (var rol in Model.Roles)
                 {
+                    var pantallasJson = System.Text.Json.JsonSerializer.Serialize(
+                    rol.Pantallas.Select(g => g.ToString()).ToList());
                     <tr>
                         <td>@rol.NombreRol</td>
+                        <td>@rol.Pantallas.Count pantalla(s)</td>
                         <td>
-                            <div class="r-actions">
-                                @* Botón editar: navega a Edit con el ID en el query string *@
-                                <a asp-page="Edit" asp-route-id="@rol.RolID"
-                                   class="btn-ico btn-ico-edit" title="Editar">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                         stroke="currentColor" stroke-width="2">
-                                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-                                    </svg>
-                                </a>
-                                @* Botón eliminar: abre modal de confirmación *@
-                                <button type="button" class="btn-ico btn-ico-delete" title="Eliminar"
-                                        onclick="showDeleteModal('@rol.RolID','@Html.Raw(Html.Encode(rol.NombreRol))')">
-                                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
-                                         stroke="currentColor" stroke-width="2">
-                                        <polyline points="3 6 5 6 21 6" />
-                                        <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6" />
-                                        <path d="M10 11v6M14 11v6" />
-                                        <path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
-                                    </svg>
-                                </button>
-                            </div>
+                            <button class="btn btn-secondary"
+                                    data-id="@rol.RolID"
+                                    data-nombre="@rol.NombreRol"
+                                    data-pantallas="@pantallasJson"
+                                    onclick="abrirModalEditar(this)">
+                                ✏️
+                            </button>
+                            <button class="btn btn-danger"
+                                    data-id="@rol.RolID"
+                                    data-nombre="@rol.NombreRol"
+                                    onclick="confirmarEliminar(this)">
+                                🗑️
+                            </button>
                         </td>
                     </tr>
                 }
@@ -626,9 +352,8 @@
             else
             {
                 <tr>
-                    <td colspan="2"
-                        style="text-align:center; color:#9ca3af; padding:40px 24px; font-size:.875rem;">
-                        No hay roles registrados aún.
+                    <td colspan="3" style="text-align:center;color:var(--text-secondary);padding:24px;">
+                        No hay roles registrados.
                     </td>
                 </tr>
             }
@@ -636,138 +361,331 @@
     </table>
 
     @* Paginación *@
-    <div class="r-pagination">
-        <span class="r-pagination-info">
-            Página @Model.PaginaActual de @Model.TotalPaginas
-        </span>
-        <div class="r-pagination-nums">
-            @for (int i = 1; i <= Model.TotalPaginas; i++)
-            {
-                <a href="?pagina=@i"
-                   class="btn-pag @(i == Model.PaginaActual ? "pag-active" : "")">@i</a>
-            }
-        </div>
-    </div>
-</div>
+    @if (Model.TotalPaginas > 1)
+    {
+        <div class="paginacion">
+            <span>Página @Model.PaginaActual de @Model.TotalPaginas (@Model.TotalRegistros registros)</span>
+            <div class="paginacion-nums">
 
-@* ── Formulario oculto para el soft-delete ──────────────────── *@
-@* Se envía cuando el usuario confirma en el modal de advertencia *@
-<form id="formDelete" method="post" asp-page-handler="Delete" style="display:none;">
-    <input type="hidden" id="inputDeleteId" name="rolId" />
-</form>
-
-@* ── Modal de advertencia: confirmar eliminación ──────────────── *@
-<div class="modal-bg" id="modalDelete" role="dialog" aria-modal="true">
-    <div class="modal-box">
-        <div class="modal-icon modal-icon-warn">
-            <svg width="30" height="30" viewBox="0 0 24 24" fill="none"
-                 stroke="currentColor" stroke-width="2">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
-                <line x1="12" y1="9" x2="12" y2="13" />
-                <line x1="12" y1="17" x2="12.01" y2="17" />
-            </svg>
-        </div>
-        <div class="modal-title">Eliminar Rol</div>
-        <div class="modal-msg">
-            ¿Está seguro que desea eliminar el rol
-            <strong id="delRolNombre"></strong>?<br>
-            Esta acción no se puede revertir.
-        </div>
-        <div class="modal-btns">
-            <button type="button" class="btn-modal-cancel" onclick="hideDeleteModal()">
-                No, cancelar
-            </button>
-            <button type="button" class="btn-modal-danger" onclick="confirmDelete()">
-                Sí, eliminar
-            </button>
-        </div>
-    </div>
-</div>
-
-@section Scripts {
-    <script>
-                // ============================================================
-        // ModuloRoles — lógica JavaScript
-        // ============================================================
-
-        // ── Modal de confirmación de eliminación ─────────────────────
-        let _rolIdPendiente = null;
-
-        // Abre el modal de advertencia y guarda el ID a eliminar.
-        function showDeleteModal(rolId, rolNombre) {
-            _rolIdPendiente = rolId;
-            const span = document.getElementById('delRolNombre');
-            if (span) span.textContent = rolNombre;
-            document.getElementById('modalDelete').classList.add('show');
-        }
-
-        // Cierra el modal de advertencia sin hacer nada.
-        function hideDeleteModal() {
-            document.getElementById('modalDelete').classList.remove('show');
-            _rolIdPendiente = null;
-        }
-
-        // Transfiere el ID al input oculto y envía el formulario de borrado.
-        function confirmDelete() {
-            if (!_rolIdPendiente) return;
-            document.getElementById('inputDeleteId').value = _rolIdPendiente;
-            document.getElementById('formDelete').submit();
-        }
-
-        // ── Modal genérico éxito / error ────────────────────────────
-        // Se llama desde código C# si se requiere mostrar un modal
-        // en lugar de la etiqueta inline.
-        function showResultModal(type, title, message) {
-            const overlay = document.getElementById('modalResult');
-            if (!overlay) return;
-
-            // Aplica la clase de color al ícono
-            const icon = document.getElementById('resultIcon');
-            icon.className = 'modal-icon modal-icon-' + type; // 'success' | 'error'
-
-            document.getElementById('resultTitle').textContent = title;
-            document.getElementById('resultMsg').textContent = message;
-            overlay.classList.add('show');
-        }
-
-        function hideResultModal() {
-            const overlay = document.getElementById('modalResult');
-            if (overlay) overlay.classList.remove('show');
-        }
-
-        // ── Validación en tiempo real de NombreRol ───────────────────
-        // Elimina cualquier carácter que no sea letra (incluyendo
-        // español: ñ, tildes) o espacio mientras el usuario escribe.
-        function validarNombreRol(input) {
-            const permitidos = /^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]*$/;
-            if (!permitidos.test(input.value)) {
-                input.value = input.value.replace(/[^a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]/g, '');
-            }
-        }
-
-        // ── Checklist de pantallas ───────────────────────────────────
-        // Añade o quita la clase visual "is-checked" al hacer clic.
-        function togglePantalla(checkbox) {
-            const item = checkbox.closest('.pantalla-item');
-            if (item) item.classList.toggle('is-checked', checkbox.checked);
-        }
-
-        // ── Inicialización ───────────────────────────────────────────
-        document.addEventListener('DOMContentLoaded', () => {
-
-            // En la página Edit, marcar visualmente los checks que ya vienen activos.
-            document.querySelectorAll('.pantalla-item input[type="checkbox"]').forEach(cb => {
-                if (cb.checked) {
-                    cb.closest('.pantalla-item')?.classList.add('is-checked');
+                @if (Model.PaginaActual > 1)
+                {
+                    <a href="?pagina=@(Model.PaginaActual - 1)" class="pag-nav">Anterior</a>
                 }
+                else
+                {
+                    <span class="pag-nav-disabled">Anterior</span>
+                }
+
+                @{
+                    int desde = Math.Max(1, Model.PaginaActual - 3);
+                    int hasta = Math.Min(Model.TotalPaginas, desde + 6);
+                    desde = Math.Max(1, hasta - 6);
+                }
+                @for (int i = desde; i <= hasta; i++)
+                {
+                    if (i == Model.PaginaActual)
+                    {
+                        <span class="pag-num activa">@i</span>
+                    }
+                    else
+                    {
+                        <a href="?pagina=@i" class="pag-num">@i</a>
+                    }
+                }
+
+                @if (Model.PaginaActual < Model.TotalPaginas)
+                {
+                    <a href="?pagina=@(Model.PaginaActual + 1)" class="pag-nav">Siguiente</a>
+                }
+                else
+                {
+                    <span class="pag-nav-disabled">Siguiente</span>
+                }
+
+            </div>
+        </div>
+    }
+    else if (Model.TotalRegistros > 0)
+    {
+        <div class="paginacion">
+            <span>@Model.TotalRegistros registro(s)</span>
+        </div>
+    }
+</div>
+
+@* ── Modal Crear ─────────────────────────────────────────────────────────── *@
+<div class="modal-overlay" id="modalCrear">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Nuevo Rol</h3>
+            <button class="modal-close" onclick="cerrarModal('modalCrear')">&#x2715;</button>
+        </div>
+        @* Error de validación visible DENTRO del modal *@
+        <div class="modal-error" id="errorCrear"></div>
+        <div class="form-group">
+            <label>Nombre del Rol *</label>
+            <input type="text" id="crearNombre" class="form-control"
+                   maxlength="40" placeholder="Ej: Administrador" />
+        </div>
+        <div class="form-group">
+            <span class="pantallas-label">Pantallas de acceso</span>
+            @if (Model.Pantallas.Any())
+            {
+                <div class="pantallas-grid" id="pantallasCrear">
+                    @foreach (var p in Model.Pantallas)
+                    {
+                        <label class="pantalla-check">
+                            <input type="checkbox"
+                                   class="crear-pantalla-check"
+                                   value="@p.PantallaID" />
+                            @p.NombrePantalla
+                        </label>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="sin-pantallas">No hay pantallas disponibles.</p>
+            }
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalCrear')">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="btnGuardarCrear"
+                    onclick="guardarRol('crear')">
+                Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
+@* ── Modal Editar ────────────────────────────────────────────────────────── *@
+<div class="modal-overlay" id="modalEditar">
+    <div class="modal">
+        <div class="modal-header">
+            <h3>Editar Rol</h3>
+            <button class="modal-close" onclick="cerrarModal('modalEditar')">&#x2715;</button>
+        </div>
+        <div class="modal-error" id="errorEditar"></div>
+        <div class="form-group">
+            <label>Nombre del Rol *</label>
+            <input type="text" id="editarNombre" class="form-control"
+                   maxlength="40" />
+        </div>
+        <div class="form-group">
+            <span class="pantallas-label">Pantallas de acceso</span>
+            @if (Model.Pantallas.Any())
+            {
+                <div class="pantallas-grid" id="pantallasEditar">
+                    @foreach (var p in Model.Pantallas)
+                    {
+                        <label class="pantalla-check">
+                            <input type="checkbox"
+                                   class="editar-pantalla-check"
+                                   value="@p.PantallaID" />
+                            @p.NombrePantalla
+                        </label>
+                    }
+                </div>
+            }
+            else
+            {
+                <p class="sin-pantallas">No hay pantallas disponibles.</p>
+            }
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalEditar')">Cancelar</button>
+            <button type="button" class="btn btn-primary" id="btnGuardarEditar"
+                    onclick="guardarRol('editar')">
+                Guardar
+            </button>
+        </div>
+    </div>
+</div>
+
+@* ── Modal Confirmar Eliminar ─────────────────────────────────────────────── *@
+<div class="modal-overlay" id="modalEliminar">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3>Confirmar Eliminación</h3>
+            <button class="modal-close" onclick="cerrarModal('modalEliminar')">&#x2715;</button>
+        </div>
+        <p id="mensajeEliminar" style="font-size:14px;color:var(--text-primary);margin-bottom:0;"></p>
+        @* Eliminar sí hace POST normal — no necesita validación *@
+        <form method="post" asp-page-handler="Eliminar" asp-route-pagina="@paginaActual">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="rolId" id="eliminarRolId" />
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal('modalEliminar')">No</button>
+                <button type="submit" class="btn btn-danger">Sí, eliminar</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function () {
+
+        // ── Helpers de modal ─────────────────────────────────────────────────────
+
+        window.cerrarModal = function(id) {
+            document.getElementById(id).classList.remove('active');
+        };
+
+        function mostrarErrorModal(modalErrorId, texto) {
+            var el = document.getElementById(modalErrorId);
+            el.textContent = texto;
+            el.classList.add('visible');
+        }
+
+        function ocultarErrorModal(modalErrorId) {
+            var el = document.getElementById(modalErrorId);
+            el.textContent = '';
+            el.classList.remove('visible');
+        }
+
+        // ── Abrir modales ────────────────────────────────────────────────────────
+
+        window.abrirModalCrear = function() {
+            ocultarErrorModal('errorCrear');
+            document.getElementById('crearNombre').value = '';
+            document.querySelectorAll('.crear-pantalla-check')
+                .forEach(function(cb) { cb.checked = false; });
+            document.getElementById('modalCrear').classList.add('active');
+        };
+
+        window.abrirModalEditar = function(btn) {
+            ocultarErrorModal('errorEditar');
+            document.getElementById('editarNombre').value = btn.dataset.nombre;
+
+            // Guardar el ID del rol que se edita en el botón de guardar
+            document.getElementById('btnGuardarEditar').dataset.rolId = btn.dataset.id;
+
+            // Marcar las pantallas del rol
+            var pantallas = JSON.parse(btn.dataset.pantallas);
+            document.querySelectorAll('.editar-pantalla-check').forEach(function(cb) {
+                cb.checked = pantallas.indexOf(cb.value) !== -1;
             });
 
-            // Cerrar cualquier modal al hacer clic en el fondo oscuro (fuera de la caja).
-            document.querySelectorAll('.modal-bg').forEach(overlay => {
-                overlay.addEventListener('click', e => {
-                    if (e.target === overlay) overlay.classList.remove('show');
+            document.getElementById('modalEditar').classList.add('active');
+        };
+
+        window.confirmarEliminar = function(btn) {
+            document.getElementById('eliminarRolId').value = btn.dataset.id;
+            document.getElementById('mensajeEliminar').textContent =
+                '\u00bfRealmente desea eliminar el rol "' + btn.dataset.nombre + '"?';
+            document.getElementById('modalEliminar').classList.add('active');
+        };
+
+        // ── Validación en cliente (dentro del modal, sin ir al servidor) ─────────
+
+        function validarNombreModal(nombre, errorId) {
+            if (!nombre) {
+                mostrarErrorModal(errorId, 'El nombre del rol es obligatorio.');
+                return false;
+            }
+            if (nombre.length > 40) {
+                mostrarErrorModal(errorId, 'El nombre no puede superar 40 caracteres.');
+                return false;
+            }
+            if (!/^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\s]+$/.test(nombre)) {
+                mostrarErrorModal(errorId, 'El nombre solo puede contener letras y espacios.');
+                return false;
+            }
+            return true;
+        }
+
+        // ── Guardar rol vía fetch (POST al handler del servidor) ─────────────────
+        // Se usa fetch para:
+        //   1. Validar en cliente primero — el error aparece dentro del modal.
+        //   2. Si el servidor también devuelve error — mostrarlo en el modal.
+        //   3. Si es exitoso — recargar la página para reflejar el cambio.
+
+        window.guardarRol = function(modo) {
+            var esCrear   = (modo === 'crear');
+            var errorId   = esCrear ? 'errorCrear'  : 'errorEditar';
+            var btnId     = esCrear ? 'btnGuardarCrear' : 'btnGuardarEditar';
+            var nombre    = (esCrear
+                ? document.getElementById('crearNombre')
+                : document.getElementById('editarNombre')).value.trim();
+
+            ocultarErrorModal(errorId);
+
+            // Validar nombre en cliente
+            if (!validarNombreModal(nombre, errorId)) return;
+
+            // Recoger pantallas seleccionadas
+            var selector   = esCrear ? '.crear-pantalla-check' : '.editar-pantalla-check';
+            var pantallas  = Array.from(document.querySelectorAll(selector + ':checked'))
+                                 .map(function(cb) { return cb.value; });
+
+            if (pantallas.length === 0) {
+                mostrarErrorModal(errorId, 'Debe seleccionar al menos una pantalla para el rol.');
+                return;
+            }
+
+            // Construir FormData para el handler de Razor Pages
+            var form  = new FormData();
+            var token = document.querySelector('input[name="__RequestVerificationToken"]');
+            if (token) form.append('__RequestVerificationToken', token.value);
+            form.append('NombreRol', nombre);
+            pantallas.forEach(function(g) { form.append('PantallasSeleccionadas', g); });
+
+            if (!esCrear) {
+                var rolId = document.getElementById('btnGuardarEditar').dataset.rolId;
+                form.append('RolID', rolId);
+            }
+
+            // Bloquear botón mientras procesa
+            var btn = document.getElementById(btnId);
+            btn.disabled    = true;
+            btn.textContent = 'Guardando...';
+            btn.classList.add('btn-saving');
+
+            var handler = esCrear ? '?handler=Crear' : '?handler=Editar';
+            // Preservar la página actual en la URL
+            var pagina  = new URLSearchParams(window.location.search).get('pagina') || '1';
+
+            fetch(window.location.pathname + handler + '&pagina=' + pagina, {
+                method: 'POST',
+                body:   form
+            })
+            .then(function(response) {
+                // Razor Pages redirige con 302 tras éxito — fetch sigue el redirect.
+                // Si la respuesta final es OK (200), el servidor procesó exitosamente.
+                if (response.ok) {
+                    // Recargar la página para mostrar el cambio y el mensaje de éxito
+                    window.location.reload();
+                } else {
+                    // El servidor devolvió un error (4xx/5xx) — mostrar en el modal
+                    return response.text().then(function(text) {
+                        // Intentar extraer el mensaje de error de la respuesta
+                        var match = text.match(/class="alert alert-error"[^>]*>([^<]+)</);
+                        var msg   = match
+                            ? match[1].trim()
+                            : 'No se pudo guardar el rol. Intente de nuevo.';
+                        mostrarErrorModal(errorId, msg);
+                    });
+                }
+            })
+            .catch(function() {
+                mostrarErrorModal(errorId, 'Error de conexión. Intente de nuevo.');
+            })
+            .finally(function() {
+                btn.disabled    = false;
+                btn.textContent = 'Guardar';
+                btn.classList.remove('btn-saving');
+            });
+        };
+
+        // ── Cerrar modal al hacer clic en el fondo oscuro ───────────────────────
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.modal-overlay').forEach(function(overlay) {
+                overlay.addEventListener('click', function(e) {
+                    if (e.target === overlay) overlay.classList.remove('active');
                 });
             });
         });
-    </script>
-}
+
+    }());
+</script>
+
