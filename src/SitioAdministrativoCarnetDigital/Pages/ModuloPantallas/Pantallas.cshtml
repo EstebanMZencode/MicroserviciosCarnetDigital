@@ -53,26 +53,6 @@
             background-color: #dc2626;
         }
 
-    .alert-box {
-        display: none;
-        padding: 12px 16px;
-        border-radius: 8px;
-        margin-bottom: 16px;
-        font-size: 14px;
-    }
-
-    .alert-exito {
-        background-color: #dcfce7;
-        color: #166534;
-        border: 1px solid #bbf7d0;
-    }
-
-    .alert-error {
-        background-color: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-    }
-
     .modal-overlay {
         display: none;
         position: fixed;
@@ -161,12 +141,25 @@
 
 <form id="antiforgeryForm">@Html.AntiForgeryToken()</form>
 
+<!-- Modal de mensajes -->
+<div id="modalMensaje" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:9999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:8px;padding:24px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3)">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <h5 id="modalMensajeTitulo" style="margin:0;font-size:18px;font-weight:600">Mensaje</h5>
+            <button onclick="cerrarModalMensaje()" style="background:none;border:none;font-size:18px;cursor:pointer">✕</button>
+        </div>
+        <p id="modalMensajeBody" style="margin:0 0 20px 0"></p>
+        <div style="display:flex;justify-content:flex-end">
+            <button onclick="cerrarModalMensaje()" class="btn btn-primary">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 <div class="page-title">Administración de Pantallas</div>
-<div id="alertBox" class="alert-box"></div>
 
 @if (!string.IsNullOrEmpty(Model.MensajeError))
 {
-    <div class="alert-box alert-error" style="display:block">@Model.MensajeError</div>
+    <div class="alert alert-danger">@Model.MensajeError</div>
 }
 
 <div class="card">
@@ -250,12 +243,16 @@
         const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
         let idAEliminar = null;
 
-        function mostrarAlerta(mensaje, tipo) {
-            const box = document.getElementById('alertBox');
-            box.className = 'alert-box ' + (tipo === 'exito' ? 'alert-exito' : 'alert-error');
-            box.style.display = 'block';
-            box.textContent = mensaje;
-            setTimeout(() => box.style.display = 'none', 6000);
+        function mostrarAlerta(mensaje, tipo, recargar = false) {
+            document.getElementById('modalMensajeTitulo').textContent = tipo === 'exito' ? 'Éxito' : 'Error';
+            document.getElementById('modalMensajeBody').textContent = mensaje;
+            document.getElementById('modalMensaje').style.display = 'flex';
+            window._recargarAlCerrar = recargar;
+        }
+
+        function cerrarModalMensaje() {
+            document.getElementById('modalMensaje').style.display = 'none';
+            if (window._recargarAlCerrar) location.reload();
         }
 
         document.getElementById('btnNuevo').addEventListener('click', () => {
@@ -304,8 +301,7 @@
             });
             const data = await resp.json();
             cerrarModal();
-            mostrarAlerta(data.mensaje, data.exito ? 'exito' : 'error');
-            if (data.exito) setTimeout(() => location.reload(), 1500);
+            mostrarAlerta(data.mensaje, data.exito ? 'exito' : 'error', data.exito);
         });
 
         document.getElementById('btnSiEliminar').addEventListener('click', async () => {
@@ -316,8 +312,7 @@
             });
             const data = await resp.json();
             cerrarModalEliminar();
-            mostrarAlerta(data.mensaje, data.exito ? 'exito' : 'error');
-            if (data.exito) setTimeout(() => location.reload(), 1500);
+            mostrarAlerta(data.mensaje, data.exito ? 'exito' : 'error', data.exito);
         });
     </script>
 }
