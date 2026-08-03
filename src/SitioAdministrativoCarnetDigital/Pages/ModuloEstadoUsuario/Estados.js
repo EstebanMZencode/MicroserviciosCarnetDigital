@@ -1,14 +1,16 @@
 ﻿(function () {
     const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
-    const alertBox = document.getElementById('alertBox');
 
+    // Modal de mensajes (éxito/error) — mismo patrón que ModuloParametros del equipo.
     function mostrarAlerta(mensaje, tipo) {
-        alertBox.classList.remove('ce-alert-exito', 'ce-alert-error');
-        alertBox.classList.add(tipo === 'exito' ? 'ce-alert-exito' : 'ce-alert-error');
-        alertBox.style.display = 'block';
-        alertBox.textContent = mensaje;
-        setTimeout(() => alertBox.style.display = 'none', 4000);
+        document.getElementById('modalMensajeTitulo').textContent = tipo === 'exito' ? 'Éxito' : 'Error';
+        document.getElementById('modalMensajeBody').textContent = mensaje;
+        document.getElementById('modalMensaje').style.display = 'flex';
     }
+
+    window.cerrarModalMensaje = function () {
+        document.getElementById('modalMensaje').style.display = 'none';
+    };
 
     document.getElementById('btnCambiar').addEventListener('click', async () => {
         const email = document.getElementById('inputEmail').value.trim();
@@ -30,10 +32,6 @@
         });
         const data = await response.json();
 
-        if (data.exito) {
-            mostrarAlerta(data.mensaje, 'exito');
-        } else {
-            mostrarAlerta(data.mensaje, 'error');
-        }
+        mostrarAlerta(data.mensaje, data.exito ? 'exito' : 'error');
     });
 })();
