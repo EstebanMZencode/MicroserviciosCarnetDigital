@@ -4,6 +4,20 @@ using SitioAdministrativoCarnetDigital.Services.MicroServicioInstituciones;
 
 namespace SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones
 {
+    public class InstitucionInput
+    {
+        public Guid InstitucionID { get; set; }
+        public string NombreInstitucion { get; set; } = string.Empty;
+        public string Email { get; set; } = string.Empty;
+        public string Telefono { get; set; } = string.Empty;
+        public string Dominios { get; set; } = string.Empty;
+    }
+
+    public class EliminarInstitucionInput
+    {
+        public Guid Id { get; set; }
+    }
+
     public class InstitucionesModel : PageModel
     {
         private readonly IInstitucionesApiClient _institucionesApi;
@@ -16,12 +30,6 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones
         public List<InstitucionDto> Instituciones { get; set; } = new();
         public string? MensajeExito { get; set; }
         public string? MensajeError { get; set; }
-
-        [BindProperty] public Guid InstitucionID { get; set; }
-        [BindProperty] public string Nombre { get; set; } = string.Empty;
-        [BindProperty] public string Email { get; set; } = string.Empty;
-        [BindProperty] public string Telefono { get; set; } = string.Empty;
-        [BindProperty] public string Dominios { get; set; } = string.Empty;
 
         private void AplicarToken()
         {
@@ -47,69 +55,55 @@ namespace SitioAdministrativoCarnetDigital.Pages.ModuloInstituciones
             }
         }
 
-        public async Task<IActionResult> OnPostAsync()
+        public async Task<IActionResult> OnPostGuardarAsync([FromBody] InstitucionInput input)
         {
             try
             {
                 AplicarToken();
                 var institucion = new InstitucionDto
                 {
-                    InstitucionID = InstitucionID,
-                    NombreInstitucion = Nombre,
-                    Email = Email,
-                    Telefono = Telefono,
-                    Dominios = Dominios
+                    InstitucionID = input.InstitucionID,
+                    NombreInstitucion = input.NombreInstitucion,
+                    Email = input.Email,
+                    Telefono = input.Telefono,
+                    Dominios = input.Dominios
                         .Split(',', StringSplitOptions.RemoveEmptyEntries)
                         .Select(d => d.Trim())
                         .ToList()
                 };
 
-                if (InstitucionID == Guid.Empty)
+                if (input.InstitucionID == Guid.Empty)
                 {
                     var (ok, status, msg) = await _institucionesApi.CreateAsync(institucion);
-                    if (ok)
-                        MensajeExito = "Institución creada correctamente.";
-                    else
-                        MensajeError = $"Error al crear: {msg}";
+                    if (ok) return new JsonResult(new { exito = true, mensaje = "Institución creada correctamente." });
+                    return new JsonResult(new { exito = false, mensaje = msg }) { StatusCode = 400 };
                 }
                 else
                 {
                     var ok = await _institucionesApi.UpdateAsync(institucion);
-                    if (ok)
-                        MensajeExito = "Institución actualizada correctamente.";
-                    else
-                        MensajeError = "Error al actualizar.";
+                    if (ok) return new JsonResult(new { exito = true, mensaje = "Institución actualizada correctamente." });
+                    return new JsonResult(new { exito = false, mensaje = "Error al actualizar." }) { StatusCode = 400 };
                 }
             }
             catch (Exception ex)
             {
-                MensajeError = $"Error: {ex.Message}";
+                return new JsonResult(new { exito = false, mensaje = ex.Message }) { StatusCode = 400 };
             }
-
-            AplicarToken();
-            Instituciones = await _institucionesApi.GetAllAsync();
-            return Page();
         }
 
-        public async Task<IActionResult> OnPostEliminarAsync()
+        public async Task<IActionResult> OnPostEliminarAsync([FromBody] EliminarInstitucionInput input)
         {
             try
             {
                 AplicarToken();
-                var ok = await _institucionesApi.DeleteAsync(InstitucionID);
-                if (ok)
-                    MensajeExito = "Institución eliminada correctamente.";
-                else
-                    MensajeError = "Error al eliminar.";
+                var ok = await _institucionesApi.DeleteAsync(input.Id);
+                if (ok) return new JsonResult(new { exito = true, mensaje = "Institución eliminada correctamente." });
+                return new JsonResult(new { exito = false, mensaje = "No se pudo eliminar." }) { StatusCode = 400 };
             }
             catch (Exception ex)
             {
-                MensajeError = $"Error: {ex.Message}";
+                return new JsonResult(new { exito = false, mensaje = ex.Message }) { StatusCode = 400 };
             }
-
-            AplicarToken();
-            Instituciones = await _institucionesApi.GetAllAsync();
-            return Page();
         }
     }
 }
