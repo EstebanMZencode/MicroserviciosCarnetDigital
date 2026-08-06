@@ -1,7 +1,7 @@
 @page
 @model SitioAdministrativoCarnetDigital.Pages.ModuloUsuarios.FotografiaModel
 @{
-    ViewData["Title"]   = "Fotografía de Usuario";
+    ViewData["Title"] = "Fotografía de Usuario";
     ViewData["Section"] = "Fotografía de Usuario";
     Layout = "_Layout";
 }
@@ -16,28 +16,28 @@
         flex-wrap: wrap;
     }
 
-    .busqueda-row label {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--text-primary);
-        white-space: nowrap;
-    }
+        .busqueda-row label {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-primary);
+            white-space: nowrap;
+        }
 
-    .busqueda-row .form-control {
-        width: 260px;
-        padding: 8px 12px;
-        border: 1px solid var(--border-color);
-        border-radius: 8px;
-        font-size: 14px;
-        outline: none;
-        transition: border-color 0.2s;
-        color: var(--text-primary);
-        background: var(--input-bg, #fff);
-    }
+        .busqueda-row .form-control {
+            width: 260px;
+            padding: 8px 12px;
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+            color: var(--text-primary);
+            background: var(--input-bg, #fff);
+        }
 
-    .busqueda-row .form-control:focus {
-        border-color: var(--accent-color);
-    }
+            .busqueda-row .form-control:focus {
+                border-color: var(--accent-color);
+            }
 
     /* ── Alertas ─────────────────────────────────────────────────────────── */
     .alert {
@@ -82,12 +82,12 @@
         flex-shrink: 0;
     }
 
-    .foto-frame img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
+        .foto-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
 
     /* Acciones a la derecha de la foto */
     .foto-acciones {
@@ -130,21 +130,27 @@
         color: white;
     }
 
-    .btn-primary:hover { opacity: 0.88; }
+        .btn-primary:hover {
+            opacity: 0.88;
+        }
 
     .btn-secondary {
         background-color: #e2e8f0;
         color: var(--text-primary);
     }
 
-    .btn-secondary:hover { background-color: #cbd5e1; }
+        .btn-secondary:hover {
+            background-color: #cbd5e1;
+        }
 
     .btn-danger {
         background-color: #ef4444;
         color: white;
     }
 
-    .btn-danger:hover { background-color: #dc2626; }
+        .btn-danger:hover {
+            background-color: #dc2626;
+        }
 
     /* ── Modal de confirmación de eliminación ────────────────────────────── */
     .modal-overlay {
@@ -157,7 +163,9 @@
         justify-content: center;
     }
 
-    .modal-overlay.active { display: flex; }
+        .modal-overlay.active {
+            display: flex;
+        }
 
     .modal {
         background: white;
@@ -175,12 +183,12 @@
         margin-bottom: 16px;
     }
 
-    .modal-header h3 {
-        font-size: 17px;
-        font-weight: 600;
-        color: var(--text-primary);
-        margin: 0;
-    }
+        .modal-header h3 {
+            font-size: 17px;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: 0;
+        }
 
     .modal-close {
         background: none;
@@ -220,10 +228,10 @@
         position: relative;
     }
 
-    .drop-zone.drag-over {
-        border-color: var(--accent-color, #4f46e5);
-        background: #eef2ff;
-    }
+        .drop-zone.drag-over {
+            border-color: var(--accent-color, #4f46e5);
+            background: #eef2ff;
+        }
 
     .drop-zone-icon {
         font-size: 40px;
@@ -264,12 +272,12 @@
         display: none;
     }
 
-    .preview-frame img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        display: block;
-    }
+        .preview-frame img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
 
     .foto-validation-msg {
         font-size: 13px;
@@ -279,19 +287,21 @@
         display: none;
     }
 
-    .foto-validation-msg.error {
-        background: #fee2e2;
-        color: #991b1b;
-        border: 1px solid #fecaca;
-        display: block;
-    }
+        .foto-validation-msg.error {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 1px solid #fecaca;
+            display: block;
+        }
 
-    .foto-validation-msg.ok {
-        background: #dcfce7;
-        color: #166534;
-        border: 1px solid #bbf7d0;
-        display: block;
-    }
+        .foto-validation-msg.ok {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #bbf7d0;
+            display: block;
+        }
+
+    /* El modal de resultado usa .modal-overlay, .modal, .modal-sm ya definidos arriba */
 </style>
 
 <div class="page-title">Fotografía de Usuario</div>
@@ -299,11 +309,19 @@
 @* ── Alertas globales ──────────────────────────────────────────────────────── *@
 @if (!string.IsNullOrEmpty(Model.MensajeExito))
 {
-    <div class="alert alert-success">@Model.MensajeExito</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            abrirModalResultado('Exito', '@Html.Raw(Model.MensajeExito.Replace("'", "\'"))');
+        });
+    </script>
 }
 @if (!string.IsNullOrEmpty(Model.MensajeError))
 {
-    <div class="alert alert-error">@Model.MensajeError</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            abrirModalResultado('Error', '@Html.Raw(Model.MensajeError.Replace("'", "\'"))');
+        });
+    </script>
 }
 
 @* ── Formulario de búsqueda ────────────────────────────────────────────────── *@
@@ -369,6 +387,20 @@
     }
 </div>
 
+@* ── Modal Resultado (Éxito / Error) ─────────────────────────────────────────── *@
+<div class="modal-overlay" id="modalResultado">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 id="modalResultadoTitulo">Éxito</h3>
+            <button class="modal-close" onclick="cerrarModalResultado()">&#x2715;</button>
+        </div>
+        <p id="modalResultadoMsg" style="margin: 8px 0 16px 0;"></p>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="cerrarModalResultado()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 @* ── Modal: Confirmar eliminación ──────────────────────────────────────────── *@
 <div class="modal-overlay" id="modalEliminar">
     <div class="modal">
@@ -402,7 +434,7 @@
         @* La validación y conversión a Base64 la hace el JS antes de enviar *@
         <form method="post" asp-page-handler="Actualizar" id="formActualizar">
             @Html.AntiForgeryToken()
-            <input type="hidden" name="Correo"     value="@Model.Correo" />
+            <input type="hidden" name="Correo" value="@Model.Correo" />
             @* fotoBase64Hidden se rellena con JS antes del submit *@
             <input type="hidden" name="FotoBase64" id="fotoBase64Hidden" />
 
@@ -448,6 +480,17 @@
 
 @* ── JavaScript ─────────────────────────────────────────────────────────────── *@
 <script>
+    // ── Modal de resultado Éxito / Error ────────────────────────────────────
+    function abrirModalResultado(titulo, mensaje) {
+        document.getElementById('modalResultadoTitulo').textContent = titulo;
+        document.getElementById('modalResultadoMsg').textContent    = mensaje;
+        document.getElementById('modalResultado').classList.add('active');
+    }
+
+    function cerrarModalResultado() {
+        document.getElementById('modalResultado').classList.remove('active');
+    }
+
     // ── Control de modales ──────────────────────────────────────────────────
 
     function abrirModalEliminar() {

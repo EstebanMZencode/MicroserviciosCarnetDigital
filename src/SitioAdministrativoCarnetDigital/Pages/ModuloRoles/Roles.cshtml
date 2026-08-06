@@ -4,6 +4,9 @@
     ViewData["Title"] = "Roles";
     ViewData["Section"] = "Administración de Roles";
     var paginaActual = Model.PaginaActual;
+    // Escapar comillas simples para que los strings sean seguros al inyectarlos en JS
+    var msgExito = (Model.SuccessMessage ?? string.Empty).Replace("'", "\'");
+    var msgError = (Model.ErrorMessage ?? string.Empty).Replace("'", "\'");
 }
 
 <style>
@@ -292,19 +295,28 @@
         opacity: 0.7;
         cursor: not-allowed;
     }
+
+    /* El modal de resultado usa .modal-overlay, .modal, .modal-sm ya definidos arriba */
 </style>
 
 <div class="page-title">Administración de Roles</div>
 
-@* Mensajes de éxito de la página (redireccionamiento tras guardar OK) *@
+@* Los mensajes al usuario se muestran como modal igual al de Áreas de Trabajo *@
 @if (!string.IsNullOrEmpty(Model.SuccessMessage))
 {
-    <div class="alert alert-success">@Model.SuccessMessage</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            window.abrirModalResultado('Exito', '@msgExito', false);
+        });
+    </script>
 }
-@* Errores globales (ej: fallo al cargar roles) — los de validación van dentro del modal *@
 @if (!string.IsNullOrEmpty(Model.ErrorMessage))
 {
-    <div class="alert alert-error">@Model.ErrorMessage</div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            window.abrirModalResultado('Error', '@msgError', false);
+        });
+    </script>
 }
 
 <div class="card">
@@ -502,6 +514,20 @@
     </div>
 </div>
 
+@* ── Modal Resultado (Éxito / Error) — igual al modal de Áreas de Trabajo ───── *@
+<div class="modal-overlay" id="modalResultado">
+    <div class="modal modal-sm">
+        <div class="modal-header">
+            <h3 id="modalResultadoTitulo">Éxito</h3>
+            <button class="modal-close" onclick="cerrarModalResultado()">&#x2715;</button>
+        </div>
+        <p id="modalResultadoMsg" style="margin: 8px 0 16px 0;"></p>
+        <div class="modal-footer">
+            <button class="btn btn-primary" onclick="cerrarModalResultado()">Cerrar</button>
+        </div>
+    </div>
+</div>
+
 @* ── Modal Confirmar Eliminar ─────────────────────────────────────────────── *@
 <div class="modal-overlay" id="modalEliminar">
     <div class="modal modal-sm">
@@ -529,6 +555,24 @@
 
         window.cerrarModal = function(id) {
             document.getElementById(id).classList.remove('active');
+        };
+
+        // ── Modal resultado Éxito/Error — globales para acceso desde HTML y Razor ──
+        var _recargarAlCerrar = false;
+
+        window.abrirModalResultado = function(titulo, mensaje, recargar) {
+            _recargarAlCerrar = !!recargar;
+            document.getElementById('modalResultadoTitulo').textContent = titulo;
+            document.getElementById('modalResultadoMsg').textContent    = mensaje;
+            document.getElementById('modalResultado').classList.add('active');
+        };
+
+        window.cerrarModalResultado = function() {
+            document.getElementById('modalResultado').classList.remove('active');
+            if (_recargarAlCerrar) {
+                _recargarAlCerrar = false;
+                window.location.reload();
+            }
         };
 
         function mostrarErrorModal(modalErrorId, texto) {
@@ -653,8 +697,13 @@
                 // Razor Pages redirige con 302 tras éxito — fetch sigue el redirect.
                 // Si la respuesta final es OK (200), el servidor procesó exitosamente.
                 if (response.ok) {
-                    // Recargar la página para mostrar el cambio y el mensaje de éxito
-                    window.location.reload();
+                    cerrarModal(esCrear ? 'modalCrear' : 'modalEditar');
+                    // recargar=true: al pulsar Cerrar se recarga la página automáticamente
+                    window.abrirModalResultado(
+                        'Éxito',
+                        esCrear ? 'Rol creado exitosamente.' : 'Rol actualizado exitosamente.',
+                        true
+                    );
                 } else {
                     // El servidor devolvió un error (4xx/5xx) — mostrar en el modal
                     return response.text().then(function(text) {
