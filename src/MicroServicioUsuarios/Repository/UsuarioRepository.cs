@@ -17,6 +17,8 @@ namespace MicroServicioUsuarios.Repository
             _logger = logger;
         }
 
+        // ── Creación completa de usuario (implementación existente, sin cambios) ─────
+
         public async Task<(Guid usuarioID, List<string> emailsCreados)> CrearUsuarioCompletoAsync(
             UsuarioCreateRequest request,
             string passwordHash)
@@ -29,12 +31,10 @@ namespace MicroServicioUsuarios.Repository
 
             try
             {
-                // Insertar usuario base
                 _logger.LogInformation("Insertando usuario: {Identificacion}", request.Identificacion);
                 var usuarioID = await InsertUsuarioAsync(transaction, request);
                 _logger.LogInformation("Usuario creado: {UsuarioID}", usuarioID);
 
-                // Insertar emails y logins
                 foreach (var emailReq in request.Emails)
                 {
                     _logger.LogInformation("Insertando email: {Email}", emailReq.Email);
@@ -44,14 +44,12 @@ namespace MicroServicioUsuarios.Repository
                     emailsCreados.Add(emailReq.Email);
                 }
 
-                // Insertar teléfonos (opcionales)
                 foreach (var telefono in request.Telefonos)
                 {
                     _logger.LogInformation("Insertando teléfono: {Telefono}", telefono);
                     await InsertTelefonoAsync(transaction, usuarioID, telefono);
                 }
 
-                // Insertar instituciones (UXI), carreras y áreas
                 foreach (var inst in request.Instituciones)
                 {
                     _logger.LogInformation("Insertando UXI: Institucion={InstitucionID}, TipoUsuario={TipoUsuarioID}, Rol={RolID}",
@@ -91,7 +89,75 @@ namespace MicroServicioUsuarios.Repository
             }
         }
 
-        // --- Métodos privados ------------------------------------------------
+        // ── Consulta de detalle por email ────────────────────────────────────────────
+
+        public async Task<UsuarioDetalleDB?> GetDetalleByEmailAsync(string email)
+        {
+            using var connection = _dbConnectionFactory.CreateConnection();
+            connection.Open();
+
+            // Recuperar datos base: Identificacion, NombreCompleto y NombreTipoUsuario.
+            // El join con UsuariosXInstituciones + TiposUsuarios puede devolver varias filas
+            // si el usuario pertenece a más de una institución; nos quedamos con la primera.
+            const string sqlBase = @"
+                SELECT TOP 1
+                    u.Identificacion,
+                    u.NombreCompleto,
+                    tu.NombreTipoUsuario
+                FROM   [Carnet_Identity_User].[EmailXUsuarios]     exu
+                JOIN   [Carnet_Identity_User].[Usuarios]            u   ON u.UsuarioID   = exu.UsuarioID
+                JOIN   [Carnet_Identity_User].[UsuariosXInstituciones] uxi
+                                                                         ON uxi.UsuarioID = u.UsuarioID
+                JOIN   [Carnet_Identity_User].[TiposUsuarios]       tu  ON tu.TipoUsuarioID = uxi.TipoUsuarioID
+                WHERE  exu.Email  = @Email
+                  AND  exu.Estado = 1
+                  AND  uxi.Estado = 1";
+
+            var row = await connection.QueryFirstOrDefaultAsync<dynamic>(sqlBase, new { Email = email });
+
+            // Email no registrado en el sistema
+            if (row is null) return null;
+
+            var detalle = new UsuarioDetalleDB
+            {
+                Identificacion = (string)row.Identificacion,
+                NombreCompleto = (string)row.NombreCompleto,
+                NombreTipoUsuario = (string)row.NombreTipoUsuario,
+            };
+
+            // Recuperar los CarreraIDs vinculados al usuario a través de UXI → UsuariosXCarreras.
+            // Un usuario puede tener 0, 1 o más carreras.
+            const string sqlCarreras = @"
+                SELECT DISTINCT uxc.CarreraID
+                FROM   [Carnet_Identity_User].[UsuariosXInstituciones] uxi
+                JOIN   [Carnet_Identity_User].[UsuariosXCarreras]      uxc ON uxc.UXIID = uxi.UXIID
+                JOIN   [Carnet_Identity_User].[EmailXUsuarios]         exu ON exu.UsuarioID = uxi.UsuarioID
+                WHERE  exu.Email  = @Email
+                  AND  exu.Estado = 1
+                  AND  uxi.Estado = 1
+                  AND  uxc.Estado = 1";
+
+            var carreraIDs = await connection.QueryAsync<Guid>(sqlCarreras, new { Email = email });
+            detalle.CarreraIDs = carreraIDs.ToList();
+
+            // Recuperar los AreaTrabIDs vinculados al usuario a través de UXI → UsuariosXAreasTrabajo.
+            const string sqlAreas = @"
+                SELECT DISTINCT uxat.AreaTrabID
+                FROM   [Carnet_Identity_User].[UsuariosXInstituciones]  uxi
+                JOIN   [Carnet_Identity_User].[UsuariosXAreasTrabajo]   uxat ON uxat.UXIID = uxi.UXIID
+                JOIN   [Carnet_Identity_User].[EmailXUsuarios]          exu  ON exu.UsuarioID = uxi.UsuarioID
+                WHERE  exu.Email  = @Email
+                  AND  exu.Estado = 1
+                  AND  uxi.Estado = 1
+                  AND  uxat.Estado = 1";
+
+            var areaIDs = await connection.QueryAsync<Guid>(sqlAreas, new { Email = email });
+            detalle.AreaIDs = areaIDs.ToList();
+
+            return detalle;
+        }
+
+        // ── Métodos privados de inserción (existentes, sin cambios) ──────────────────
 
         private static async Task<Guid> InsertUsuarioAsync(IDbTransaction transaction, UsuarioCreateRequest request)
         {
@@ -166,7 +232,7 @@ namespace MicroServicioUsuarios.Repository
         {
             const string sql = "[Carnet_Identity_User].[SP_UXAreas_Insert]";
             await transaction.Connection!.ExecuteAsync(sql,
-                new { UXIID = uxiID, AreaTrabID = areaID }, 
+                new { UXIID = uxiID, AreaTrabID = areaID },
                 transaction: transaction,
                 commandType: CommandType.StoredProcedure);
         }
