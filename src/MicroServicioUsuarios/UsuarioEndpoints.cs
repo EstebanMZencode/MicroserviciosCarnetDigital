@@ -11,18 +11,19 @@ namespace MicroServicioUsuarios
             var group = routes.MapGroup("/api/usuario");
 
             group.MapPost("/", MapCrear);
+            group.MapGet("/{email}", MapGetByEmail);
         }
 
+        // POST /api/usuario — creación de usuario (existente, sin cambios)
         private static async Task<IResult> MapCrear(
             [FromBody] UsuarioCreateRequest request,
             [FromHeader(Name = "Authorization")] string? authorization,
             IUsuarioService usuarioService)
         {
-            var token = ExtraerToken(authorization);
+            var token = ExtraerBearer(authorization);
             if (string.IsNullOrWhiteSpace(token))
                 return Results.Json(new { message = "No autorizado." }, statusCode: 401);
 
-            // Validaciones básicas del body
             if (request.TipoIdentID == Guid.Empty)
                 return Results.Json(new { message = "El tipo de identificación es obligatorio." }, statusCode: 400);
 
@@ -77,7 +78,36 @@ namespace MicroServicioUsuarios
             };
         }
 
-        private static string? ExtraerToken(string? authorization)
+        // GET /api/usuario/{email}
+        // Header requerido: Authorization: Bearer {jwt}
+        // Responde 200 con identificacion, nombreCompleto, tipoUsuario, carreras y areas.
+        // Responde 401 si el token es inválido, 404 si el email no existe.
+        private static async Task<IResult> MapGetByEmail(
+            string email,
+            [FromHeader(Name = "Authorization")] string? authorization,
+            IUsuarioService usuarioService)
+        {
+            var token = ExtraerBearer(authorization);
+            if (string.IsNullOrWhiteSpace(token))
+                return Results.Json(new { message = "No autorizado." }, statusCode: 401);
+
+            if (string.IsNullOrWhiteSpace(email) || !email.Contains('@'))
+                return Results.Json(new { message = "El email proporcionado no es válido." }, statusCode: 400);
+
+            var (data, statusCode, error) = await usuarioService.GetDetalleByEmailAsync(email, token);
+
+            return statusCode switch
+            {
+                200 => Results.Ok(data),
+                401 => Results.Json(new { message = error }, statusCode: 401),
+                404 => Results.Json(new { message = error }, statusCode: 404),
+                500 => Results.Json(new { message = error }, statusCode: 500),
+                _ => Results.Json(new { message = "Error inesperado." }, statusCode: 500)
+            };
+        }
+
+        // Extrae el JWT del header Authorization: Bearer {token}
+        private static string? ExtraerBearer(string? authorization)
             => authorization?.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase) == true
                 ? authorization[7..].Trim()
                 : null;
