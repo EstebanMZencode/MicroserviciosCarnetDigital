@@ -11,14 +11,14 @@ namespace MicroServicioQRs
                 .WithName("QR")
                 .WithOpenApi();
 
-            // USR3: genera y devuelve el QR del usuario autenticado.
-            group.MapGet("/{usuarioId:guid}", GenerarQr)
+            // USR3: genera y devuelve el QR del usuario autenticado (por email).
+            group.MapGet("/{email}", GenerarQr)
                 .WithName("GenerarQr")
                 .WithOpenApi();
 
-            // GRD3: consulta el usuario por su llave primaria (para comparar).
-            group.MapGet("/usuario/{id:guid}", ConsultarPorLlave)
-                .WithName("ConsultarUsuarioPorLlave")
+            // GRD3: consulta el usuario por email (para comparar).
+            group.MapGet("/usuario/{email}", ConsultarPorEmail)
+                .WithName("ConsultarUsuarioPorEmail")
                 .WithOpenApi();
 
             // GRD3: valida dato por dato el JSON escaneado.
@@ -27,11 +27,11 @@ namespace MicroServicioQRs
                 .WithOpenApi();
         }
 
-        private static async Task<IResult> GenerarQr(Guid usuarioId, IQrService service)
+        private static async Task<IResult> GenerarQr(string email, IQrService service)
         {
             try
             {
-                var resultado = await service.GenerarQr(usuarioId);
+                var resultado = await service.GenerarQr(email);
                 return Results.Ok(resultado);
             }
             catch (Exception ex)
@@ -40,11 +40,11 @@ namespace MicroServicioQRs
             }
         }
 
-        private static async Task<IResult> ConsultarPorLlave(Guid id, IQrService service)
+        private static async Task<IResult> ConsultarPorEmail(string email, IQrService service)
         {
             try
             {
-                var usuario = await service.ConsultarPorLlave(id);
+                var usuario = await service.ConsultarPorEmail(email);
                 return Results.Ok(usuario);
             }
             catch (Exception ex)

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? "Server=tiusr23pl.cuc-carrera-ti.ac.cr;Database=tiusr23pl_Carnet_Core;User Id=Carnet_Core_User;Password=Carnet_Core123;Encrypt=false;TrustServerCertificate=true;";
+    ?? "Server=tiusr23pl.cuc-carrera-ti.ac.cr;Database=tiusr23pl_Carnet_Identity;User Id=Carnet_Identity_User;Password=Carnet_Identity123;Encrypt=False;TrustServerCertificate=True;";
 
 builder.Services.AddDbContext<QrDbContext>(options =>
     options.UseSqlServer(connectionString));

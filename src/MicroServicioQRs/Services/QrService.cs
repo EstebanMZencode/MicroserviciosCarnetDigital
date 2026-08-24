@@ -14,11 +14,11 @@ namespace MicroServicioQRs.Services
             _usuarioRepository = usuarioRepository;
         }
 
-        // USR3: genera el QR (imagen PNG en base64) del usuario autenticado.
-        public async Task<QrResponse> GenerarQr(Guid usuarioId)
+        // USR3: genera el QR (imagen PNG en base64) del usuario autenticado, buscando por email.
+        public async Task<QrResponse> GenerarQr(string email)
         {
-            // 1. Traer el usuario real de la BD (solo activos).
-            var usuario = await _usuarioRepository.ObtenerPorId(usuarioId);
+            // 1. Traer el usuario real de la BD por su email (solo activos).
+            var usuario = await _usuarioRepository.ObtenerPorEmail(email);
 
             // 2. Armar el DTO que ira DENTRO del QR (solo lo identificador).
             var dto = new UsuarioQrDto
@@ -48,10 +48,10 @@ namespace MicroServicioQRs.Services
             };
         }
 
-        // GRD3: consulta el usuario por su llave primaria (para que el guarda compare).
-        public async Task<UsuarioQrDto> ConsultarPorLlave(Guid usuarioId)
+        // GRD3: consulta el usuario por email (para que el guarda compare).
+        public async Task<UsuarioQrDto> ConsultarPorEmail(string email)
         {
-            var usuario = await _usuarioRepository.ObtenerPorId(usuarioId);
+            var usuario = await _usuarioRepository.ObtenerPorEmail(email);
 
             return new UsuarioQrDto
             {
@@ -73,11 +73,17 @@ namespace MicroServicioQRs.Services
                 return respuesta;
             }
 
-            // Consultar el usuario real por su llave primaria.
+            // El QR escaneado trae el UsuarioID adentro, asi que se consulta por Id (Guid).
             UsuarioQrDto real;
             try
             {
-                real = await ConsultarPorLlave(escaneado.UsuarioID);
+                var usuario = await _usuarioRepository.ObtenerPorId(escaneado.UsuarioID);
+                real = new UsuarioQrDto
+                {
+                    UsuarioID = usuario.UsuarioID,
+                    Identificacion = usuario.Identificacion,
+                    NombreCompleto = usuario.NombreCompleto
+                };
             }
             catch
             {
@@ -93,7 +99,6 @@ namespace MicroServicioQRs.Services
             if (escaneado.NombreCompleto != real.NombreCompleto)
                 respuesta.Diferencias.Add("El nombre no coincide.");
 
-            // Si no hubo diferencias, el QR es valido.
             respuesta.Valido = respuesta.Diferencias.Count == 0;
             respuesta.Mensaje = respuesta.Valido
                 ? "QR valido. Los datos coinciden."
