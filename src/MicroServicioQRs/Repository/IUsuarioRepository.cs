@@ -4,8 +4,10 @@ namespace MicroServicioQRs.Repository
 {
     public interface IUsuarioRepository
     {
-        // Consulta del usuario por su llave primaria.
-        // La usan tanto USR3 (para generar el QR) como GRD3 (para validar).
+        // GRD3: busca por llave primaria para validar el QR escaneado.
         Task<Usuario> ObtenerPorId(Guid id);
+
+        // USR3: busca por email (via EmailXUsuarios → Usuarios).
+        Task<Usuario> ObtenerPorEmail(string email);
     }
 }

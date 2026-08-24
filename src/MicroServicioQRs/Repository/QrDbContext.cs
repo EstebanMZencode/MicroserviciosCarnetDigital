@@ -1,6 +1,5 @@
 ﻿using MicroServicioQRs.Entities;
 using Microsoft.EntityFrameworkCore;
-using System.Reflection.Emit;
 
 namespace MicroServicioQRs.Repository
 {
@@ -9,13 +8,13 @@ namespace MicroServicioQRs.Repository
         public QrDbContext(DbContextOptions<QrDbContext> options) : base(options) { }
 
         public DbSet<Usuario> Usuarios { get; set; }
+        public DbSet<EmailXUsuario> EmailXUsuarios { get; set; }
         public DbSet<Bitacora> Bitacoras { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
-            // Usuarios vive en el schema Carnet_Identity_User (NO Carnet_Core_User)
             modelBuilder.Entity<Usuario>(entity =>
             {
                 entity.ToTable("Usuarios", schema: "Carnet_Identity_User");
@@ -27,8 +26,13 @@ namespace MicroServicioQRs.Repository
                 entity.Property(e => e.FechaModificacion).HasDefaultValueSql("GETUTCDATE()");
             });
 
-            // Bitacoras: schema por confirmar. Lo dejo en Carnet_Identity_User;
-            // si tu tabla esta en otro schema, ajusta esta linea.
+            modelBuilder.Entity<EmailXUsuario>(entity =>
+            {
+                entity.ToTable("EmailXUsuarios", schema: "Carnet_Identity_User");
+                entity.HasKey(e => e.Email);
+                entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            });
+
             modelBuilder.Entity<Bitacora>(entity =>
             {
                 entity.ToTable("Bitacoras", schema: "Carnet_Identity_User");
