@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:app_grd/screens/scanner/scanner_screen.dart';
+import 'package:app_grd/screens/login/login_screen.dart';
 
 void main() {
   runApp(const AppGrd());
@@ -17,7 +17,7 @@ class AppGrd extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.indigo),
         useMaterial3: true,
       ),
-      home: const ScannerScreen(),
+      home: const LoginScreen(),
     );
   }
 }
