@@ -50,6 +50,8 @@ class _QrScreenState extends State<QrScreen> {
       appBar: AppBar(
         title: const Text('Mi código QR'),
         centerTitle: true,
+        backgroundColor: const Color(0xFF1E4CFF),
+        foregroundColor: Colors.white,
       ),
       body: Center(child: _construirContenido()),
     );
