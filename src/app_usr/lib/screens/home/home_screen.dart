@@ -176,10 +176,12 @@ class _HomeScreenState extends State<HomeScreen> {
             const SizedBox(height: 20),
             _buildTarjetaDatos(),
             const SizedBox(height: 20),
-            if (tieneFoto)
+            if (!tieneFoto)
+              _buildAvisoSinFoto()
+            /*if (tieneFoto)
               _buildIndicadorQr()
             else
-              _buildAvisoSinFoto(),
+              _buildAvisoSinFoto(),*/
           ],
         ),
       ),
@@ -259,33 +261,33 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Nombre completo
-          _buildFila(Icons.badge_outlined, 'Nombre', u.nombreCompleto),
+          _buildFila('Nombre', u.nombreCompleto),
           const Divider(height: 24),
           // Identificación
-          _buildFila(Icons.fingerprint, 'Identificación', u.identificacion),
+          _buildFila('Identificación', u.identificacion),
           const Divider(height: 24),
           // Tipo de usuario
-          _buildFila(Icons.person_outline, 'Tipo de usuario', u.tipoUsuario),
+          _buildFila('Tipo de usuario', u.tipoUsuario),
           // Carreras (si aplica)
           if (u.carreras.isNotEmpty) ...[
             const Divider(height: 24),
-            _buildFilaLista(Icons.school_outlined, 'Carreras', u.carreras),
+            _buildFilaLista('Carreras', u.carreras),
           ],
           // Áreas de trabajo (si aplica)
           if (u.areas.isNotEmpty) ...[
             const Divider(height: 24),
-            _buildFilaLista(Icons.work_outline, 'Áreas de trabajo', u.areas),
+            _buildFilaLista('Áreas de trabajo', u.areas),
           ],
         ],
       ),
     );
   }
 
-  Widget _buildFila(IconData icono, String etiqueta, String valor) {
+  Widget _buildFila(String etiqueta, String valor) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icono, color: _acento, size: 20),
+        Icon(Icons.info_outline, color: _acento, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -315,11 +317,11 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildFilaLista(IconData icono, String etiqueta, List<String> items) {
+  Widget _buildFilaLista(String etiqueta, List<String> items) {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icono, color: _acento, size: 20),
+        Icon(Icons.info_outline, color: _acento, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -356,7 +358,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // ── Indicadores de QR y aviso sin foto ───────────────────────────────────
 
-  Widget _buildIndicadorQr() {
+  /*Widget _buildIndicadorQr() {
     return Container(
       decoration: BoxDecoration(
         color: _acento.withValues(alpha: 0.08),
@@ -376,7 +378,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ],
       ),
     );
-  }
+  }*/
 
   Widget _buildAvisoSinFoto() {
     return Container(
