@@ -8,13 +8,12 @@ namespace MicroServicioQRs.Entities
     {
         [Key]
         [StringLength(255)]
-        public string Email { get; set; }
+        public string Email { get; set; } = string.Empty;
 
         public Guid UsuarioID { get; set; }
 
         public Guid InstitucionID { get; set; }
 
-        // 1 = activo
         public bool Estado { get; set; }
     }
 }

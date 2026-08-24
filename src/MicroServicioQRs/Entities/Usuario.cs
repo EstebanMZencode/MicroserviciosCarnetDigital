@@ -3,7 +3,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace MicroServicioQRs.Entities
 {
-    // Mapeada a la tabla real Carnet_Identity_User.Usuarios
     [Table("Usuarios")]
     public class Usuario
     {
@@ -14,20 +13,18 @@ namespace MicroServicioQRs.Entities
 
         [Required]
         [StringLength(100)]
-        public string Identificacion { get; set; }
+        public string Identificacion { get; set; } = string.Empty;
 
         [Required]
         [StringLength(255)]
-        public string NombreCompleto { get; set; }
+        public string NombreCompleto { get; set; } = string.Empty;
 
-        // varchar(max), nullable. Es la foto del carnet.
         public string? FotoBase64 { get; set; }
 
         public DateTime FechaCreacion { get; set; }
 
         public DateTime FechaModificacion { get; set; }
 
-        // OJO: EstadoID es un Guid (FK a EstadosUsuarios), NO un bool.
         public Guid EstadoID { get; set; }
     }
 }

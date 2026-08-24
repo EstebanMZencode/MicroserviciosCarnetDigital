@@ -26,7 +26,7 @@ namespace MicroServicioQRs.Repository
 
         public async Task<Usuario> ObtenerPorEmail(string email)
         {
-            // El email vive en EmailXUsuarios, se hace JOIN con Usuarios.
+            // El email vive en EmailXUsuarios — se hace JOIN con Usuarios
             var usuario = await (
                 from exu in _context.EmailXUsuarios
                 join u in _context.Usuarios on exu.UsuarioID equals u.UsuarioID
