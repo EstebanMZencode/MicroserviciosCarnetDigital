@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:http/http.dart' as http;
 import 'package:app_usr/services/secure_storage_service.dart';
 
@@ -7,45 +8,32 @@ class QRService {
 
   QRService(this.storage);
 
-  // URL base de tu MicroServicioQRs publicado en Plesk.
-  static const String _baseUrl =
-      'https://tiusr23pl.cuc-carrera-ti.ac.cr/MicroServicioQRs';
+  // Misma base del Gateway que usan los demás services (viene del .env)
+  String get _baseUrl => dotenv.env['BASE_URL']!;
 
-  /// USR3: obtiene el QR del usuario autenticado.
+  /// USR3: obtiene el QR del usuario autenticado a través del Gateway.
   /// Devuelve un mapa con: qrBase64 (imagen), contenido (json) y usuarioID.
   Future<Map<String, dynamic>> obtenerQr() async {
-    // 1. Sacar el token y el id del usuario guardados en la sesion.
     final token = await storage.getAccessToken();
     final usuarioId = await storage.getUsuarioId();
 
-    if (token == null || token.isEmpty) {
-      throw Exception('No hay sesion activa (token no encontrado).');
+    if (token == null || usuarioId == null) {
+      throw Exception('Sesión no disponible.');
     }
-    if (usuarioId == null || usuarioId.isEmpty) {
-      throw Exception('No se encontro el usuario en la sesion.');
-    }
-
-    // 2. Armar la peticion al microservicio.
-    final url = Uri.parse('$_baseUrl/api/qr/$usuarioId');
 
     final response = await http.get(
-      url,
-      headers: {
-        'Authorization': 'Bearer $token',
-        'Content-Type': 'application/json',
-      },
+      Uri.parse('$_baseUrl/gateway/qrs/$usuarioId'),
+      headers: {'Authorization': 'Bearer $token'},
     );
 
-    // 3. Procesar la respuesta.
     if (response.statusCode == 200) {
-      final data = jsonDecode(response.body) as Map<String, dynamic>;
-      return data; // contiene qrBase64, contenido, usuarioID
+      return jsonDecode(response.body) as Map<String, dynamic>;
     } else if (response.statusCode == 401) {
-      throw Exception('No autorizado. La sesion pudo haber expirado.');
+      throw Exception('No autorizado. La sesión pudo haber expirado.');
     } else if (response.statusCode == 404) {
       throw Exception('Usuario no encontrado o inactivo.');
     } else {
-      throw Exception('Error al obtener el QR (${response.statusCode}).');
+      throw Exception('No se pudo obtener el QR (${response.statusCode}).');
     }
   }
 }
