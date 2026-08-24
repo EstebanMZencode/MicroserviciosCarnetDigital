@@ -108,32 +108,92 @@ class _PerfilBody extends StatelessWidget {
       }
     }
 
+    const acento = Color(0xFF3F51B5);
+    const azulMedio = Color(0xFF1A237E);
+
     return Center(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            CircleAvatar(
-              radius: 64,
-              backgroundImage: fotoProvider,
-              child: fotoProvider == null
-                  ? const Icon(Icons.person, size: 64)
-                  : null,
-            ),
-            const SizedBox(height: 24),
-            Text(
-              perfil.nombreCompleto,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.headlineSmall,
-            ),
-            const SizedBox(height: 12),
-            Text('Identificación: ${perfil.identificacion}'),
-            const SizedBox(height: 4),
-            Text('Tipo de usuario: ${perfil.tipoUsuario}'),
-          ],
+        child: Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withValues(alpha: 0.07),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              CircleAvatar(
+                radius: 64,
+                backgroundColor: const Color(0xFFE2E8F0),
+                backgroundImage: fotoProvider,
+                child: fotoProvider == null
+                    ? const Icon(Icons.person,
+                        size: 64, color: Color(0xFFA0AEC0))
+                    : null,
+              ),
+              const SizedBox(height: 24),
+              Text(
+                perfil.nombreCompleto,
+                textAlign: TextAlign.center,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: azulMedio,
+                ),
+              ),
+              const SizedBox(height: 20),
+              _buildFila(Icons.badge_outlined, 'Identificación',
+                  perfil.identificacion, acento),
+              const Divider(height: 24),
+              _buildFila(Icons.person_outline, 'Tipo de usuario',
+                  perfil.tipoUsuario, acento),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildFila(
+      IconData icono, String etiqueta, String valor, Color acento) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icono, color: acento, size: 20),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                etiqueta,
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Color(0xFF6B7280),
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                valor,
+                style: const TextStyle(
+                  fontSize: 15,
+                  color: Color(0xFF111827),
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
