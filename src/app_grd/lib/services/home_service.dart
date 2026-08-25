@@ -43,10 +43,10 @@ class HomeService {
     // un avatar por defecto en su lugar.
     String? fotoBase64;
     try {
-      final fotoResponse = await http.get(
-        Uri.parse('$_baseUrl/gateway/fotografias/usuario/fotografia/$email'),
-        headers: headers,
-      );
+  final fotoResponse = await http.get(
+    Uri.parse('$_baseUrl/gateway/fotografias/$email'),
+    headers: headers,
+  );
 
       if (fotoResponse.statusCode == 200) {
         final fotoJson = jsonDecode(fotoResponse.body) as Map<String, dynamic>;
