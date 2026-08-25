@@ -261,7 +261,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // Nombre completo
-          _buildFila('Nombre', u.nombreCompleto),
+          _buildFila('Nombre completo', u.nombreCompleto),
           const Divider(height: 24),
           // Identificación
           _buildFila('Identificación', u.identificacion),
@@ -287,7 +287,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.info_outline, color: _acento, size: 20),
+        Icon(Icons.info_outline, color: Colors.white, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(
@@ -321,7 +321,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(Icons.info_outline, color: _acento, size: 20),
+        Icon(Icons.info_outline, color: Colors.white, size: 20),
         const SizedBox(width: 12),
         Expanded(
           child: Column(

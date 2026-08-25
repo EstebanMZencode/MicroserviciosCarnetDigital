@@ -22,7 +22,7 @@ class QRService {
     }
 
     final response = await http.get(
-      Uri.parse('$_baseUrl/gateway/qrs/qr/$usuarioId'),
+      Uri.parse('$_baseUrl/gateway/qrs/$usuarioId'),
       headers: {'Authorization': 'Bearer $token'},
     );
 
