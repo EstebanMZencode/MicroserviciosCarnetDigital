@@ -46,12 +46,33 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
+  Future<void> _cerrarSesion() async {
+    await _storage.clearSession();
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(builder: (_) => const LoginScreen()),
+    );
+  }
+
+  void _irAScanner() {
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => const ScannerScreen()),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Mis datos'),
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: _cerrarSesion,
+            tooltip: 'Cerrar sesión',
+            icon: const Icon(Icons.logout),
+          ),
+        ],
       ),
       body: FutureBuilder<GuardaPerfil>(
         future: _perfilFuture,
@@ -79,14 +100,21 @@ class _HomeScreenState extends State<HomeScreen> {
           return _PerfilBody(perfil: snapshot.data!);
         },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (_) => const ScannerScreen()),
+      floatingActionButton: FutureBuilder<GuardaPerfil>(
+        future: _perfilFuture,
+        builder: (context, snapshot) {
+          final tieneFoto = snapshot.connectionState == ConnectionState.done &&
+              snapshot.hasData &&
+              snapshot.data!.fotoBase64 != null &&
+              snapshot.data!.fotoBase64!.isNotEmpty;
+
+          return FloatingActionButton(
+            onPressed: tieneFoto ? _irAScanner : null,
+            tooltip: 'Escanear carnet',
+            backgroundColor: tieneFoto ? null : Colors.grey,
+            child: const Icon(Icons.camera_alt),
           );
         },
-        tooltip: 'Escanear carnet',
-        child: const Icon(Icons.camera_alt),
       ),
     );
   }
@@ -107,6 +135,7 @@ class _PerfilBody extends StatelessWidget {
         fotoProvider = null;
       }
     }
+    final sinFoto = perfil.fotoBase64 == null || perfil.fotoBase64!.isEmpty;
 
     const acento = Color(0xFF3F51B5);
     const azulMedio = Color(0xFF1A237E);
@@ -139,6 +168,28 @@ class _PerfilBody extends StatelessWidget {
                         size: 64, color: Color(0xFFA0AEC0))
                     : null,
               ),
+              if (sinFoto) ...[
+                const SizedBox(height: 12),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFFF3CD),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFFFE69C)),
+                  ),
+                  child: const Text(
+                    'No se validará el uso de esta aplicación hasta que haya '
+                    'registrado su fotografía.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 13,
+                      color: Color(0xFF856404),
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
               const SizedBox(height: 24),
               Text(
                 perfil.nombreCompleto,
