@@ -10,12 +10,12 @@ class UsuarioQrDto {
   });
 
   factory UsuarioQrDto.fromJson(Map<String, dynamic> json) {
-    return UsuarioQrDto(
-      usuarioID: json['usuarioID'].toString(),
-      identificacion: json['identificacion'] as String,
-      nombreCompleto: json['nombreCompleto'] as String,
-    );
-  }
+  return UsuarioQrDto(
+    usuarioID: (json['UsuarioID'] ?? json['usuarioID']).toString(),
+    identificacion: (json['Identificacion'] ?? json['identificacion']) as String,
+    nombreCompleto: (json['NombreCompleto'] ?? json['nombreCompleto']) as String,
+  );
+}
 
   Map<String, dynamic> toJson() {
     return {
