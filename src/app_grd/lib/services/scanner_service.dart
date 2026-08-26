@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:app_grd/models/usuario_qr_dto.dart';
 import 'package:app_grd/models/validacion_response.dart';
 import 'package:app_grd/services/secure_storage_service.dart';
@@ -9,8 +10,7 @@ class ScannerService {
 
   ScannerService(this.storage);
 
-  static const String _baseUrl =
-      'https://tiusr23pl.cuc-carrera-ti.ac.cr/MicroServicioGatewayPry';
+  String get _baseUrl => dotenv.env['BASE_URL']!;
 
   Future<ValidacionResponse> validarQr(UsuarioQrDto datos) async {
     final token = await storage.getAccessToken();

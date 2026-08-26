@@ -1,7 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:app_grd/screens/login/login_screen.dart';
 
-void main() {
+Future<void> main() async {
+  // Necesario antes de cualquier llamada asíncrona en main()
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // Cargar el .env antes de iniciar la app para que dotenv.env esté disponible
+  await dotenv.load(fileName: '.env');
+
   runApp(const AppGrd());
 }
 
