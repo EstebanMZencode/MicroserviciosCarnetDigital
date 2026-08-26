@@ -157,7 +157,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (!mounted) return false;
         Navigator.push(
           context,
-          MaterialPageRoute(builder: (_) => const QrScreen()),
+          MaterialPageRoute(builder: (_) => QrScreen(authService: widget.authService)),
         );
         return false; // no descartar el widget, solo navegar
       },

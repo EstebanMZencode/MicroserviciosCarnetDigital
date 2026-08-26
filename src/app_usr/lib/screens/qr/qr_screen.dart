@@ -2,9 +2,11 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:app_usr/services/qr_service.dart';
 import 'package:app_usr/services/secure_storage_service.dart';
+import 'package:app_usr/services/i_auth_service.dart';
 
 class QrScreen extends StatefulWidget {
-  const QrScreen({super.key});
+  final IAuthService authService;
+  const QrScreen({super.key, required this.authService});
 
   @override
   State<QrScreen> createState() => _QrScreenState();
@@ -31,6 +33,7 @@ class _QrScreenState extends State<QrScreen> {
     });
 
     try {
+      await widget.authService.refresh();
       final data = await _qrService.obtenerQr();
       setState(() {
         _qrBase64 = data['qrBase64'] as String;
