@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:app_grd/services/secure_storage_service.dart';
 
 class AuthService {
@@ -7,8 +8,7 @@ class AuthService {
 
   AuthService(this.storage);
 
-  static const String _baseUrl =
-      'https://tiusr23pl.cuc-carrera-ti.ac.cr/MicroServicioGatewayPry';
+  String get _baseUrl => dotenv.env['BASE_URL']!;
 
   // TODO: reemplazar por el GUID real del TipoUsuario "Guarda"
   // (tabla TiposUsuarios, MicroServicioTiposUsuario). Con este placeholder

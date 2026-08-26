@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:app_grd/models/guarda_perfil.dart';
 import 'package:app_grd/services/secure_storage_service.dart';
 
@@ -12,8 +13,7 @@ class HomeService {
 
   HomeService(this.storage);
 
-  static const String _baseUrl =
-      'https://tiusr23pl.cuc-carrera-ti.ac.cr/MicroServicioGatewayPry';
+  String get _baseUrl => dotenv.env['BASE_URL']!;
 
   Future<GuardaPerfil> obtenerPerfil(String email) async {
     final token = await storage.getAccessToken();
